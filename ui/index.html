@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmithAgentic</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a0a;
+      --surface: #141414;
+      --border:  #2a2a2a;
+      --text:    #e0e0e0;
+      --muted:   #666;
+      --accent:  #1976d2;
+      --success: #4caf50;
+      --warn:    #ff9800;
+      --error:   #f44336;
+      --mono:    'Consolas', 'Courier New', monospace;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
+
+    #root { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── Header ── */
+    .header { display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .header h1 { font-size: 18px; font-weight: 600; color: var(--accent); letter-spacing: 1px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--error); }
+    .dot.online { background: var(--success); }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+
+    /* ── Main Layout ── */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Left Panel ── */
+    .left-panel { width: 360px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding: 16px; gap: 12px; overflow-y: auto; }
+
+    .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+
+    textarea, input, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      border-radius: 4px; padding: 8px 10px; font-size: 13px; font-family: inherit;
+      outline: none; resize: none; transition: border-color 0.15s;
+    }
+    textarea:focus, input:focus, select:focus { border-color: var(--accent); }
+    textarea { min-height: 100px; }
+    select option { background: var(--surface); }
+
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 9px 18px; border-radius: 4px; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.5px; transition: opacity 0.15s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .btn-danger { background: var(--error); color: #fff; }
+    .btn-danger:hover:not(:disabled) { opacity: 0.85; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+
+    /* ── Status pill ── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+    }
+    .pill-idle    { background: #1a1a1a; color: var(--muted); }
+    .pill-running { background: #1a2a3a; color: var(--accent); }
+    .pill-done    { background: #1a2a1a; color: var(--success); }
+    .pill-error   { background: #2a1a1a; color: var(--error); }
+
+    /* ── Files list ── */
+    .files-list { display: flex; flex-direction: column; gap: 4px; }
+    .file-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 8px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; font-size: 12px; font-family: var(--mono);
+    }
+    .file-item a { color: var(--accent); text-decoration: none; }
+    .file-item a:hover { text-decoration: underline; }
+
+    /* ── Right Panel: Terminal ── */
+    .terminal { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
+    .terminal-header { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+    .terminal-body {
+      flex: 1; overflow-y: auto; padding: 12px 16px;
+      font-family: var(--mono); font-size: 12px; line-height: 1.6;
+    }
+    .terminal-body::-webkit-scrollbar { width: 6px; }
+    .terminal-body::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    .line { white-space: pre-wrap; word-break: break-all; }
+    .line.sep     { color: var(--accent); }
+    .line.error   { color: var(--error); }
+    .line.success { color: var(--success); }
+    .line.muted   { color: var(--muted); }
+    .line.warn    { color: var(--warn); }
+    .cursor { display: inline-block; width: 8px; height: 14px; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const API = (path) => `http://localhost:8765${path}`;
+const WS  = (runId) => `ws://localhost:8765/ws/${runId}`;
+
+// ── classify line for coloring ────────────────────────────────────────────────
+function lineClass(line) {
+  if (!line) return 'line muted';
+  const l = line.toLowerCase();
+  if (l.startsWith('[error]') || l.includes('error') || l.includes('exception')) return 'line error';
+  if (l.includes('approved') || l.includes('completed') || l.includes('success')) return 'line success';
+  if (l.includes('warning') || l.includes('warn')) return 'line warn';
+  if (l.startsWith('===') || l.startsWith('---') || l.startsWith('final output')) return 'line sep';
+  if (l.startsWith('[smithagentic]') || l.startsWith('[info]')) return 'line muted';
+  return 'line';
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+function App() {
+  const [ollamaOk, setOllamaOk]         = useState(false);
+  const [models, setModels]             = useState([]);
+  const [crewDefaults, setCrewDefaults] = useState({});
+  const [goal, setGoal]                 = useState('');
+  const [crew, setCrew]                 = useState('default');
+  const [model, setModel]               = useState('');
+  const [modelOverridden, setModelOverridden] = useState(false);
+  const [runId, setRunId]               = useState(null);
+  const [status, setStatus]             = useState('idle');
+  const [lines, setLines]               = useState([]);
+  const [files, setFiles]               = useState([]);
+  const wsRef                           = useRef(null);
+  const termRef                         = useRef(null);
+
+  // ── Poll Ollama status ──────────────────────────────────────────────────────
+  useEffect(() => {
+    async function check() {
+      try {
+        const r = await fetch(API('/api/status'));
+        const d = await r.json();
+        setOllamaOk(d.ollama);
+      } catch { setOllamaOk(false); }
+    }
+    check();
+    const t = setInterval(check, 10000);
+    return () => clearInterval(t);
+  }, []);
+
+  // ── Load models + crew defaults ────────────────────────────────────────────
+  useEffect(() => {
+    async function load() {
+      try {
+        const [modelsRes, defaultsRes] = await Promise.all([
+          fetch(API('/api/models')),
+          fetch(API('/api/crew-defaults')),
+        ]);
+        const modelsData   = await modelsRes.json();
+        const defaultsData = await defaultsRes.json();
+        const modelList = modelsData.models || [];
+        setModels(modelList);
+        setCrewDefaults(defaultsData);
+        // Set initial model to the default crew's configured model if available,
+        // otherwise fall back to the first model Ollama has installed.
+        const initialDefault = defaultsData['default'];
+        const pick = modelList.includes(initialDefault) ? initialDefault
+                   : modelList.length ? modelList[0] : '';
+        setModel(pick);
+      } catch {}
+    }
+    load();
+  }, []);
+
+  // ── Auto-switch model when crew changes ────────────────────────────────────
+  useEffect(() => {
+    if (modelOverridden) return;  // user manually chose a model — don't override
+    const preferred = crewDefaults[crew];
+    if (!preferred) return;
+    // Use the crew's preferred model if it's installed, otherwise keep current
+    if (models.includes(preferred)) setModel(preferred);
+  }, [crew, crewDefaults, models, modelOverridden]);
+
+  function handleCrewChange(newCrew) {
+    setCrew(newCrew);
+    setModelOverridden(false);  // reset override flag so auto-switch fires
+  }
+
+  function handleModelChange(newModel) {
+    setModel(newModel);
+    setModelOverridden(true);   // user manually chose — stop auto-switching
+  }
+
+  // ── Auto-scroll terminal ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (termRef.current) {
+      termRef.current.scrollTop = termRef.current.scrollHeight;
+    }
+  }, [lines]);
+
+  // ── WebSocket connect ──────────────────────────────────────────────────────
+  const connectWS = useCallback((id) => {
+    if (wsRef.current) wsRef.current.close();
+    const ws = new WebSocket(WS(id));
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'output') {
+        setLines(prev => [...prev, msg.line]);
+      } else if (msg.type === 'done') {
+        setStatus(msg.status === 'completed' ? 'done' : 'error');
+        setFiles(msg.files || []);
+      }
+    };
+    ws.onerror = () => setStatus('error');
+    ws.onclose = () => {};
+    wsRef.current = ws;
+  }, []);
+
+  // ── Start run ──────────────────────────────────────────────────────────────
+  async function startRun() {
+    if (!goal.trim()) return;
+    setLines([]);
+    setFiles([]);
+    setStatus('running');
+
+    try {
+      const r = await fetch(API('/api/run'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goal: goal.trim(), crew, model: model || null, hitl: false }),
+      });
+      const d = await r.json();
+      setRunId(d.run_id);
+      connectWS(d.run_id);
+    } catch (e) {
+      setStatus('error');
+      setLines([`[ERROR] Failed to start run: ${e.message}`]);
+    }
+  }
+
+  function stopRun() {
+    if (wsRef.current) wsRef.current.close();
+    setStatus('idle');
+  }
+
+  function clearTerminal() { setLines([]); }
+
+  const isRunning = status === 'running';
+  const statusLabel = { idle: 'Idle', running: 'Running...', done: 'Completed', error: 'Error' }[status];
+
+  return (
+    <div id="root" style={{display:'flex',flexDirection:'column',height:'100vh'}}>
+      {/* Header */}
+      <div className="header">
+        <div className={`dot ${ollamaOk ? 'online' : ''}`} title={ollamaOk ? 'Ollama online' : 'Ollama offline'} />
+        <h1>SMITH<span style={{color:'#e0e0e0',fontWeight:300}}>AGENTIC</span></h1>
+        <div className="header-right">
+          <span>Ollama: <b style={{color: ollamaOk ? 'var(--success)' : 'var(--error)'}}>{ollamaOk ? 'Online' : 'Offline'}</b></span>
+          {runId && <span style={{fontFamily:'var(--mono)'}}>Run: {runId}</span>}
+          <span className={`pill pill-${status === 'running' ? 'running' : status === 'done' ? 'done' : status === 'error' ? 'error' : 'idle'}`}>
+            {isRunning && <span style={{width:6,height:6,borderRadius:'50%',background:'currentColor',animation:'blink 0.8s infinite'}} />}
+            {statusLabel}
+          </span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="main">
+        {/* Left Panel */}
+        <div className="left-panel">
+          <div className="section-title">Goal</div>
+          <div>
+            <div className="label">Describe what you want to build</div>
+            <textarea
+              value={goal}
+              onChange={e => setGoal(e.target.value)}
+              placeholder="Build a React dashboard for machine status with real-time OPC-UA data..."
+              disabled={isRunning}
+            />
+          </div>
+
+          <div className="row">
+            <div>
+              <div className="label">Crew</div>
+              <select value={crew} onChange={e => handleCrewChange(e.target.value)} disabled={isRunning}>
+                <option value="default">Default</option>
+                <option value="plc">PLC / Logix</option>
+                <option value="react">React / UI</option>
+              </select>
+            </div>
+            <div>
+              <div className="label" style={{display:'flex',alignItems:'center',gap:6}}>
+                Model
+                {crewDefaults[crew] && model === crewDefaults[crew] && (
+                  <span style={{fontSize:9,padding:'1px 5px',borderRadius:8,background:'#1a2a1a',color:'var(--success)',fontWeight:600,letterSpacing:'0.5px'}}>OPTIMAL</span>
+                )}
+                {modelOverridden && (
+                  <span style={{fontSize:9,padding:'1px 5px',borderRadius:8,background:'#2a2a1a',color:'var(--warn)',fontWeight:600,letterSpacing:'0.5px'}}>OVERRIDE</span>
+                )}
+              </div>
+              <select value={model} onChange={e => handleModelChange(e.target.value)} disabled={isRunning}>
+                {models.length === 0 && <option value="">— no models —</option>}
+                {models.map(m => (
+                  <option key={m} value={m}>
+                    {m}{crewDefaults[crew] === m ? ' ★' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="row">
+            <button
+              className="btn btn-primary"
+              onClick={startRun}
+              disabled={isRunning || !goal.trim() || !ollamaOk}
+            >
+              {isRunning ? 'Running...' : '▶ Run Crew'}
+            </button>
+            {isRunning && (
+              <button className="btn btn-danger" onClick={stopRun} style={{flex:'0 0 auto'}}>
+                Stop
+              </button>
+            )}
+          </div>
+
+          {!ollamaOk && (
+            <div style={{fontSize:12,color:'var(--error)',padding:'6px 8px',background:'#1a0a0a',borderRadius:4,border:'1px solid var(--error)'}}>
+              Ollama is offline. Run <code style={{fontFamily:'var(--mono)'}}>ollama serve</code> to start it.
+            </div>
+          )}
+
+          <div className="divider" />
+
+          {/* Output files */}
+          <div className="section-title">Output Files</div>
+          {files.length === 0 ? (
+            <div style={{fontSize:12,color:'var(--muted)'}}>No files yet — files appear here after the run completes.</div>
+          ) : (
+            <div className="files-list">
+              {files.map(f => (
+                <div className="file-item" key={f}>
+                  <span>{f}</span>
+                  <a href={API(`/api/outputs/${f}`)} target="_blank" rel="noreferrer">↓ download</a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Terminal */}
+        <div className="terminal">
+          <div className="terminal-header">
+            <span style={{color:'var(--accent)'}}>●</span>
+            <span>Agent Output</span>
+            <span style={{marginLeft:'auto'}}>
+              <button className="btn btn-ghost" style={{padding:'3px 10px',fontSize:11}} onClick={clearTerminal}>Clear</button>
+            </span>
+          </div>
+          <div className="terminal-body" ref={termRef}>
+            {lines.length === 0 && !isRunning && (
+              <div className="line muted">Enter a goal and click Run Crew to begin.</div>
+            )}
+            {lines.map((line, i) => (
+              <div key={i} className={lineClass(line)}>{line}</div>
+            ))}
+            {isRunning && <span className="cursor" />}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

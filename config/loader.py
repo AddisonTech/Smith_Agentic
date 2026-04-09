@@ -1,0 +1,37 @@
+"""
+config/loader.py
+Load and expose the YAML config. Single source of truth for all settings.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+_CONFIG_PATH = Path(__file__).parent / "config.yaml"
+
+
+def load_config() -> dict[str, Any]:
+    """Return the full parsed config dict."""
+    with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def get_crew_model(config: dict, crew_name: str) -> str:
+    """
+    Return the configured model for a given crew name.
+
+    Lookup order:
+      1. config["crew_models"][crew_name]  — per-crew assignment in config.yaml
+      2. config["llm_fallback"]["model"]   — fallback if crew not mapped
+      3. "llama3.1:8b"                     — hard default if config is missing keys
+
+    This is the single point used by all crew builders and the web UI endpoint.
+    CLI --model overrides this value after it is resolved.
+    """
+    crew_models = config.get("crew_models", {})
+    if crew_name in crew_models:
+        return crew_models[crew_name]
+    fallback = config.get("llm_fallback", {})
+    return fallback.get("model", "llama3.1:8b")
