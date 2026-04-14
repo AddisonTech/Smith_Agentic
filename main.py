@@ -35,6 +35,7 @@ from config.loader import load_config, get_crew_model
 from crews.default_crew import build_crew as build_default_crew
 from crews.plc_crew import build_crew as build_plc_crew
 from crews.react_crew import build_crew as build_react_crew
+from crews.vision_crew import build_crew as build_vision_crew
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
@@ -50,6 +51,7 @@ examples:
   python main.py --goal "Design a caching strategy for a high-traffic API" --no-verbose
   python main.py --goal "Build a Rockwell PLC program for a conveyor system" --crew plc
   python main.py --goal "Build a React dashboard for machine status" --crew react
+  python main.py --goal "Run a Vision_Inspect defect analysis and report" --crew vision
         """,
     )
     parser.add_argument(
@@ -72,7 +74,7 @@ examples:
         "--crew", "-c",
         default="default",
         metavar="CREW",
-        help="Which crew to run: 'default', 'plc', 'react'. (default: default)",
+        help="Which crew to run: 'default', 'plc', 'react', 'vision'. (default: default)",
     )
     parser.add_argument(
         "--no-verbose",
@@ -95,6 +97,7 @@ _CREW_BUILDERS = {
     "default": build_default_crew,
     "plc":     build_plc_crew,
     "react":   build_react_crew,
+    "vision":  build_vision_crew,
 }
 
 

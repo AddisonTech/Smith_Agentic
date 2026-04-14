@@ -13,13 +13,14 @@ llm:
 # Change a model here to swap it for every future run of that crew.
 # Any tag from `ollama list` works.
 crew_models:
-  default: deepseek-r1:14b    # best open-source reasoning — handles unknown goal domains
-  plc:     deepseek-r1:14b    # reasoning critical for safe PLC planning and safety review
-  react:   qwen2.5-coder:14b  # purpose-built code generation for React/MUI work
+  default: qwen2.5-coder:7b
+  plc:     qwen2.5:7b
+  react:   qwen2.5-coder:7b
+  vision:  qwen2.5:7b
 
 # ── Fallback (used if crew not found in crew_models) ─────────────────────────
 llm_fallback:
-  model: llama3.1:8b          # fast fallback if a 14B model isn't available
+  model: llama3.1:8b
 
 crew:
   process: sequential         # sequential | hierarchical
@@ -32,3 +33,26 @@ memory:
   persist_dir: memory/chroma  # ChromaDB persistent storage (relative to smith_agentic/)
   collection: smith_agentic_memory    # ChromaDB collection name
   enabled: true               # set false to disable memory entirely
+
+# ── Per-agent model routing (Phase 1D) ───────────────────────────────────────
+# Each agent can use a different Ollama model. get_agent_model() in loader.py
+# resolves these. Falls back to llm_fallback.model if agent not listed.
+agent_models:
+  orchestrator:        qwen2.5:7b
+  researcher:          qwen2.5:7b
+  builder:             qwen2.5-coder:7b
+  critic:              qwen2.5:7b
+  qa_agent:            llama3.1:8b
+  security_agent:      qwen2.5:7b
+  docs_agent:          llama3.1:8b
+  memory_agent:        llama3.1:8b
+  deploy_agent:        qwen2.5:7b
+  observability_agent: llama3.1:8b
+  vision_analyst:      qwen2.5:7b
+  vision_reporter:     llama3.1:8b
+  vision_qa:           llama3.1:8b
+
+# ── Vision_Inspect backend connection ─────────────────────────────────────────
+vision_inspect:
+  base_url: http://localhost:8000   # Vision_Inspect FastAPI service
+  timeout:  30                      # seconds per API call

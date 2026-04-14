@@ -35,3 +35,18 @@ def get_crew_model(config: dict, crew_name: str) -> str:
         return crew_models[crew_name]
     fallback = config.get("llm_fallback", {})
     return fallback.get("model", "llama3.1:8b")
+
+
+def get_agent_model(config: dict, agent_name: str) -> str:
+    """
+    Return the configured model for a specific agent.
+
+    Lookup order:
+      1. config["agent_models"][agent_name]  — per-agent assignment in config.yaml
+      2. config["llm_fallback"]["model"]     — fallback if agent not mapped
+      3. "llama3.1:8b"                       — hard default if config is missing keys
+    """
+    agent_models = config.get("agent_models", {})
+    if agent_name in agent_models:
+        return agent_models[agent_name]
+    return config.get("llm_fallback", {}).get("model", "llama3.1:8b")

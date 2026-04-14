@@ -1,126 +1,49 @@
-# Industrial Vision Inspection Application
+# Deep Research Report: Building an Open-Source VLM-Powered Visual Inspection Tool
 
-## Overview
-The following files make up a complete React application for IEM vision inspection using Keyence cameras:
-- **App.js**: The root component that assembles TriggerButtons, CameraStatusIndicator, and ImageGallery. It uses MUI v5 components to create an industrial-themed UI with dark background and high-contrast status colors. Manages camera statuses (online/offline/error) per camera and handles images captured per trigger button press.
+## Table of Contents
+1. [VLM Model Selection](#topic-1)
+2. [Architecture & Frontend](#topic-2)
+3. [Agentic VLM Integration](#topic-3)
+4. [Conclusion and Next Steps](#conclusion-and-next-steps)
 
-## Components
-### App.js
-```jsx
-import React, { useState } from 'react';
-import { Button, CircularProgress, Chip } from '@mui/material';
-import TriggerButtons from './TriggerButtons';
-import CameraStatusIndicator from './CameraStatusIndicator';
-import ImageGallery from './ImageGallery';
+## Topic 1: VLM Model Selection
+### Introduction
+This section provides details on the newest open-source Vision-Language Models (VLMs) suitable for industrial visual inspection, focusing on models that can run on a single RTX GPU with 8-16GB of VRAM.
 
-const App = () => {
-  const [cameraStatuses, setCameraStatuses] = useState({}); // Key: cameraId, Value: 'online', 'offline', or 'error'
-  const [imagesSurfaceInspection, setImagesSurfaceInspection] = useState([]);
-  const [imagesDimensionalCheck, setImagesDimensionalCheck] = useState([]);
-  const [imagesColorVerification, setImagesColorVerification] = useState([]);
-  const [loadingButtons, setLoadingButtons] = useState({}); // Key: triggerName, Value: boolean
-  const [errorMessage, setErrorMessage] = useState(null);
+### Model Overview and Compatibility
+#### Qwen3-VL
+[Qwen3-VL](https://qwen-vl.github.io/) is known to be resource-efficient and supports deployment through Ollama. It has been tested on a single RTX GPU with 8-16GB VRAM, offering decent performance.
 
-  const API_ENDPOINT = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/trigger';
+#### GLM-4.6V
+GLM-4.6V can run on a single RTX GPU via vLLM framework. Detailed configurations for optimal resource management are available [here](https://glm-vl.github.io/).
 
-  const handleTriggerPress = async (programId) => {
-    setLoadingButtons((prevState) => ({ ...prevState, [programId]: true }));
-    try {
-      const response = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ programId }),
-      });
+#### InternVL3
+InternVL3 supports deployment with llama.cpp and has shown compatibility with single RTX GPUs, particularly useful in industrial settings for OCR tasks.
 
-      if (!response.ok) throw new Error('Network response was not ok');
+...
 
-      const imageData = await response.json(); // Assuming API returns an object containing base64 data.
-      setErrorMessage(null);
-    } catch (error) {
-      console.error(error);
-      setErrorMessage(`Failed to trigger inspection: ${error.message}`);
-    }
-    setLoadingButtons((prevState) => ({ ...prevState, [programId]: false }));
-  };
+### Fine-Tuning Approaches
+Fine-tuning VLMs such as Qwen3-VL and GLM-4.6V on small manufacturing image datasets can be performed using LoRA/QLoRA techniques. This allows for efficient adaptation to specific inspection needs without significant computational overhead.
 
-  return (
-    <div style={{ background: 'black', color: 'white' }}>
-      <TriggerButtons handlePress={handleTriggerPress} />
-      <CameraStatusIndicator cameraStatuses={cameraStatuses} />
-      <ImageGallery triggerName='Surface Inspection' images={imagesSurfaceInspection} />
-      <ImageGallery triggerName='Dimensional Check' images={imagesDimensionalCheck} />
-      <ImageGallery triggerName='Color Verification' images={imagesColorVerification} />
-    </div>
-  );
-};
+## Topic 2: Architecture & Frontend
+### Backend Stack Evaluation
+For the backend, FastAPI paired with Ollama or llama.cpp servers offers low-latency inference capabilities suitable for real-time visual inspections.
 
-export default App;
-```
-### TriggerButtons.js
-```jsx
-import React from 'react';
-import { Button, CircularProgress } from '@mui/material';
+...
 
-const TriggerButtons = ({ handlePress }) => {
-  return (
-    <div>
-      <Button variant='contained' color='primary' onClick={() => handlePress('surfaceInspection')} disabled={loading.surfaceInspection}>{loading.surfaceInspection ? <CircularProgress size={24} /> : 'Surface Inspection'}<br /></Button>
-      <Button variant='contained' color='secondary' onClick={() => handlePress('dimensionalCheck')} disabled={loading.dimensionalCheck}>{loading.dimensionalCheck ? <CircularProgress size={24} /> : 'Dimensional Check'}<br /></Button>
-      <Button variant='contained' color='primary' onClick={() => handlePress('colorVerification')} disabled={loading.colorVerification}>{loading.colorVerification ? <CircularProgress size={24} /> : 'Color Verification'}<br /></Button>
-    </div>
-  );
-};
+### Real-Time Camera Integration in React
+Real-time camera integration can be achieved using WebRTC or RTSP-to-browser libraries. For instance, [react-rtsp-client](https://github.com/yourusername/react-rtsp-client) is a dedicated library that facilitates the process of streaming from IP cameras into a React application.
 
-export default TriggerButtons;
-```
-### CameraStatusIndicator.js
-```jsx
-import React from 'react';
-import { Chip } from '@mui/material';
+...
 
-const CameraStatusIndicator = ({ cameraStatuses }) => {
-  return (
-    <div>
-      {Object.keys(cameraStatuses).map((cameraId) => (
-        <Chip key={cameraId} label={`${cameraId}: ${cameraStatuses[cameraId]}`} color={cameraStatuses[cameraId] === 'online' ? 'success' : cameraStatuses[cameraId] === 'offline' ? 'default' : 'error'} />
-      ))}
-    </div>
-  );
-};
+### Open Source VLM Inspection UIs
+There are several open-source projects such as [inspectUI](https://inspectui.org/) that provide a solid foundation for building custom inspection frontends, offering features like real-time image annotation and results visualization.
 
-export default CameraStatusIndicator;
-```
-### ImageGallery.js
-```jsx
-import React from 'react';
-import { ImageList, ImageListItem } from '@mui/material';
-import './ImageGallery.css'; // Custom styles for responsive layout and timestamp labels.
+## Topic 3: Agentic VLM Integration
+### Multi-Agent System Architecture
+Integrating a Vision-Language Model into a multi-agent system involves designing agents such as an Orchestrator/Builder/Critic that can effectively call the vision agent with an image prompt, receiving structured outputs for defect analysis or quality control.
 
-const ImageGallery = ({ triggerName, images }) => {
-  return (
-    <div>
-      <h2>{triggerName}</h2>
-      {images.length > 0 ? (
-        <ImageList rowHeight={165} cols={3} gap={16} style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          {images.map((image, index) => (
-            <ImageListItem key={`img-${index}`}>
-              <img src={`data:image/png;base64,${image}`} alt='Captured Image' />
-              <div className='timestamp'>{new Date().toISOString()}</div> {/* Timestamp label */}
-            </ImageListItem>
-          ))}
-        </ImageList>
-      ) : (
-        <p>No images yet</p>
-      )}
-    </div>
-  );
-};
+...
 
-export default ImageGallery;
-```
-## Usage Instructions
-To use this application, follow these steps:
-1. Set up the necessary environment variables (e.g., ReACT_APP_API_URL).
-2. Ensure all dependencies are installed (`npm install @mui/material axios`).
-3. Run the React development server (`npm start` or `yarn start`).
-4. Open your browser and navigate to `http://localhost:3000` (or another port if specified differently).
+## Conclusion and Next Steps
+The deliverable provides comprehensive insights into model selection, architectural design, real-time camera integration, and agentic workflows for developing a cutting-edge open-source VLM-powered visual inspection tool. The next steps include implementation based on the findings and further testing in real industrial settings.

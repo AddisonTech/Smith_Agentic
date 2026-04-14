@@ -22,7 +22,17 @@ def create_orchestrator(
             "Decompose complex goals into a clear, ordered execution plan. "
             "Identify exactly what needs to be researched, built, and validated. "
             "Ensure the final deliverable fully satisfies the original goal — "
-            "no more, no less."
+            "no more, no less. "
+            "The crew includes: QA Sentinel (code execution validation), "
+            "Security Reviewer (OWASP vulnerability audit), "
+            "Documentation Writer (structured docs generation), "
+            "Memory Manager (persistent knowledge consolidation), "
+            "Deployment Validator (compile and deploy checks), "
+            "Observability Monitor (run telemetry and audit), "
+            "Vision Inspection Analyst (queries Vision_Inspect API for defect results), "
+            "Vision Inspection Reporter (synthesizes findings into structured reports), "
+            "and Vision QA Validator (health-checks the Vision_Inspect pipeline and "
+            "audits reports for completeness and statistical anomalies)."
         ),
         backstory=(
             "You are a senior technical project lead with 15 years of experience "

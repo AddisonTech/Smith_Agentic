@@ -32,12 +32,15 @@ class WebSearchTool(BaseTool):
 
     def _run(self, query: str, max_results: int = 5) -> str:
         try:
-            from duckduckgo_search import DDGS
+            from ddgs import DDGS
         except ImportError:
-            return (
-                "duckduckgo-search is not installed. "
-                "Run: pip install duckduckgo-search"
-            )
+            try:
+                from duckduckgo_search import DDGS
+            except ImportError:
+                return (
+                    "ddgs is not installed. "
+                    "Run: pip install ddgs"
+                )
 
         try:
             with DDGS() as ddgs:

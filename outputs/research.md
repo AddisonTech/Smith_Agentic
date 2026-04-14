@@ -1,24 +1,24 @@
-# Research Report
-## Background
-The goal is to develop a React application for industrial vision inspection using Keyence cameras. The application will include components like TriggerButtons, CameraStatusIndicator, and ImageGallery. It must communicate with an API at `http://localhost:8080/api/trigger`, manage state for camera statuses and images captured per trigger event, and use MUI v5 (Material-UI) components.
-## Best Practices
-1. **Component Separation:** Break the application into discrete React components to enhance maintainability.
-2. **State Management:** Use React's useState hook for managing component states such as camera status and image data arrays.
-3. **Error Handling:** Implement proper error handling mechanisms, particularly for network requests made via `fetch()`.
-## Tools & References
-1. **MUI v5 Components:**
-   - **Button:** https://mui.com/material-ui/api/button/
-   - **CircularProgress:** https://mui.com/material-ui/api/circular-progress/
-   - **Chip:** https://mui.com/material-ui/api/chip/
-   - **ImageList:** https://mui.com/material-ui/react-image-list/
-2. **API Documentation:** Directly test or consult documentation for the `http://localhost:8080/api/trigger` endpoint to know the structure of returned data.
-3. **Base64 Encoding Reference:** GeeksforGeeks - Base64 Encoding Guide (https://www.geeksforgeeks.org/base64-encoding-how-to-use-it/)
-## Pitfalls
-1. **Incorrect MUI v5 Imports:** Ensure to import from `@mui/material` instead of the deprecated `@material-ui/core`.
-2. **API Endpoint Unavailability:** Setup local testing or mock data if direct API calls are not possible.
-3. **Image Data Handling:** Properly handle and decode base64 strings returned by the API.
-## Summary
-- Ensure proper state management using React hooks for camera status and images captured per trigger event.
-- Implement loading spinners during API requests with MUI v5 components.
-- Use appropriate MUI v5 components for buttons, status indicators, and image galleries.
-- Test API response structure directly or use mock data if unavailable.
+# vLLM Tool Calling Capabilities
+
+vLLM supports several methods of function calling within its chat completion API:
+
+1. **Named Function Calling:**
+   - Uses structured outputs to ensure the response matches the tool parameter object defined by the JSON schema.
+   - Requires defining functions in the `tools` parameter and specifying a `name` in the `tool_choice` parameter.
+2. **Required Function Calling (`tool_choice='required'`):**
+   - Ensures the model generates one or more tool calls based on the specified tools, with the output strictly following the schema defined in the `tools` parameter.
+3. **Automatic Tool Choice (`--enable-auto-tool-choice`):**
+   - Enables the model to generate its own tool calls when it deems appropriate.
+4. **None Function Calling (`tool_choice='none'`):**
+   - Prevents any tool calls, response contains regular text content only.
+
+### Setup Instructions:
+
+- To enable automatic function calling: Use `--enable-auto-tool-choice`, select a `--tool-call-parser`, and optionally specify a chat template with `--chat-template`.
+- For Hermes models: Use `--tool-call-parser hermes`
+- For Mistral models: Recommended flags include `--tokenizer_mode hf --config_format hf --load_format hf --tool-call-parser mistral --chat-template examples/tool_chat_template_mistral_parallel.jinja`
+- For Llama Models (JSON-based): Use `--tool-call-parser llama3_json` and select appropriate chat template.
+
+### Constrained Decoding Behavior:
+
+The behavior of enforcing the tool parameter schema during generation depends on the `tool_choice` mode. Named function calling and required modes enforce the schema, while automatic mode does not constrain decoding and relies on a parser to extract tool calls from raw text output.
