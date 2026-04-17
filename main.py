@@ -23,8 +23,15 @@ Web UI:
 from __future__ import annotations
 
 import argparse
+import io
 import sys
 from pathlib import Path
+
+# Force UTF-8 stdout/stderr on Windows to avoid cp1252 crashes on emoji output.
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if sys.stderr.encoding and sys.stderr.encoding.lower() != 'utf-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Ensure smith_agentic/ is on sys.path regardless of where the script is invoked from.
 _HERE = Path(__file__).resolve().parent
