@@ -5,7 +5,7 @@ Load and expose the YAML config. Single source of truth for all settings.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 
@@ -35,6 +35,23 @@ def get_crew_model(config: dict, crew_name: str) -> str:
         return crew_models[crew_name]
     fallback = config.get("llm_fallback", {})
     return fallback.get("model", "llama3.1:8b")
+
+
+def get_target_repo(config: dict) -> str | None:
+    """
+    Return the resolved absolute path to the target repo, or None if not set.
+
+    Lookup order:
+      1. config["_target_repo"]       — set by CLI --target-repo at runtime
+      2. config["crew"]["target_repo"] — from config.yaml (null by default)
+    """
+    runtime = config.get("_target_repo")
+    if runtime:
+        return str(Path(runtime).expanduser().resolve())
+    yaml_val = config.get("crew", {}).get("target_repo")
+    if yaml_val:
+        return str(Path(yaml_val).expanduser().resolve())
+    return None
 
 
 def get_agent_model(config: dict, agent_name: str) -> str:

@@ -38,7 +38,7 @@ _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
-from config.loader import load_config, get_crew_model
+from config.loader import load_config, get_crew_model, get_target_repo
 from crews.default_crew import build_crew as build_default_crew
 from crews.plc_crew import build_crew as build_plc_crew
 from crews.react_crew import build_crew as build_react_crew
@@ -95,6 +95,16 @@ examples:
         default=False,
         help="Skip human-in-the-loop plan approval. Run fully autonomously.",
     )
+    parser.add_argument(
+        "--target-repo", "-t",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Absolute (or ~-relative) path to an external repository for agents to "
+            "read from and write to directly. "
+            "Example: --target-repo ~/Documents/GitHub/Sift"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -118,6 +128,8 @@ def main() -> None:
         cfg["_model_override"] = args.model
     if args.no_verbose:
         cfg["crew"]["verbose"] = False
+    if args.target_repo:
+        cfg["_target_repo"] = args.target_repo
 
     hitl = not args.no_hitl
     cfg["crew"]["hitl"] = hitl
@@ -143,6 +155,7 @@ def main() -> None:
 def _banner(args: argparse.Namespace, cfg: dict) -> None:
     sep = "=" * 60
     effective_model = cfg.get("_model_override") or get_crew_model(cfg, args.crew)
+    target = get_target_repo(cfg)
     print(f"\n{sep}")
     print("  SmithAgentic — Multi-Agent Crew")
     print(sep)
@@ -150,6 +163,8 @@ def _banner(args: argparse.Namespace, cfg: dict) -> None:
     print(f"  Crew   : {args.crew}")
     print(f"  Verbose: {cfg['crew'].get('verbose', True)}")
     print(f"  HITL   : {cfg['crew'].get('hitl', True)}")
+    if target:
+        print(f"  Target : {target}")
     print(f"  Goal   : {args.goal}")
     print(f"{sep}\n")
 

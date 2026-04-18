@@ -28,6 +28,8 @@ crew:
   max_rpm: 10                 # max requests/min to Ollama (throttle for stability)
   output_dir: outputs         # relative to smith_agentic/
   hitl: true                  # human-in-the-loop plan approval (--no-hitl to skip)
+  target_repo: null           # absolute path to external repo agents can read/write directly
+                              # override at runtime with --target-repo /path/to/repo
 
 memory:
   persist_dir: memory/chroma  # ChromaDB persistent storage (relative to smith_agentic/)

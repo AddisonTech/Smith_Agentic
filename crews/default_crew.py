@@ -49,9 +49,11 @@ from tools.file_tools import FileReadTool, FileWriteTool, FileListTool
 from tools.search_tool import WebSearchTool
 from tools.web_fetch_tool import WebFetchTool
 from tools.code_executor import CodeExecutorTool
+from tools.target_repo_tools import create_target_repo_tools
+from tools.git_tool import GitStatusTool, GitStageTool, GitCommitTool, GitPushTool
 from memory.memory_store import create_memory_tools
 from crews.hitl import approve_plan
-from config.loader import get_crew_model, get_agent_model
+from config.loader import get_crew_model, get_agent_model, get_target_repo
 
 
 def build_crew(goal: str, config: dict) -> Crew:
@@ -89,10 +91,24 @@ def build_crew(goal: str, config: dict) -> Crew:
     code_exec    = CodeExecutorTool()
     mem_store, mem_query = create_memory_tools(config)
 
+    # Target repo tools (only when --target-repo is provided)
+    target_repo = get_target_repo(config)
+    if target_repo:
+        tr_read, tr_write, tr_list, tr_glob = create_target_repo_tools(target_repo)
+        git_status = GitStatusTool(repo_path=target_repo)
+        git_stage  = GitStageTool(repo_path=target_repo)
+        git_commit = GitCommitTool(repo_path=target_repo)
+        git_push   = GitPushTool(repo_path=target_repo)
+        researcher_extra = [tr_read, tr_list, tr_glob]
+        builder_extra    = [tr_read, tr_write, tr_list, tr_glob, git_status, git_stage, git_commit, git_push]
+    else:
+        researcher_extra = []
+        builder_extra    = []
+
     # ── Agents ────────────────────────────────────────────────────────────────
     orchestrator  = create_orchestrator(llm=llm_orch, tools=[file_list, mem_query], verbose=verbose)
-    researcher    = create_researcher(llm=llm_res, tools=[web_search, web_fetch, file_write, file_list, mem_store, mem_query], verbose=verbose)
-    builder       = create_builder(llm=llm_build, tools=[file_read, file_write, file_list, mem_store, mem_query], verbose=verbose)
+    researcher    = create_researcher(llm=llm_res, tools=[web_search, web_fetch, file_write, file_list, mem_store, mem_query] + researcher_extra, verbose=verbose)
+    builder       = create_builder(llm=llm_build, tools=[file_read, file_write, file_list, mem_store, mem_query] + builder_extra, verbose=verbose)
     critic        = create_critic(llm=llm_crit, tools=[file_read, file_write, file_list, mem_query], verbose=verbose)
     qa_agent      = create_qa_agent(llm=llm_qa, tools=[file_read, file_write, file_list, code_exec, mem_store, mem_query], verbose=verbose)
     security_agent = create_security_agent(llm=llm_sec, tools=[file_read, file_write, file_list, mem_store, mem_query], verbose=verbose)
