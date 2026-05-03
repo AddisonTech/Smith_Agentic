@@ -1,6 +1,6 @@
 """
 agents/observability_agent.py
-Observability Monitor agent — analyzes crew run audit trail, produces telemetry report.
+Observability Monitor agent - analyzes crew run audit trail, produces telemetry report.
 Follows OpenTelemetry span-and-trace conventions for agent run reporting.
 """
 from __future__ import annotations

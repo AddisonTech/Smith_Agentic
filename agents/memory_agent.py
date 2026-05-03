@@ -1,6 +1,6 @@
 """
 agents/memory_agent.py
-Memory Manager agent — consolidates crew run outputs into persistent memory.
+Memory Manager agent - consolidates crew run outputs into persistent memory.
 Implements the A-MEM Zettelkasten note-linking pattern for structured recall.
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ def create_memory_agent(
         backstory=(
             "You are a knowledge management specialist who distills lengthy run outputs into "
             "reusable memory entries tagged by topic. Future crews retrieve your memories and "
-            "avoid redoing work. You never store vague summaries — only specific, actionable "
+            "avoid redoing work. You never store vague summaries - only specific, actionable "
             "facts with clear topic labels. You always check for existing similar memories "
             "before storing new ones to avoid duplication."
         ),

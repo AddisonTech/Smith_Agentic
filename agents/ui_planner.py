@@ -1,6 +1,6 @@
 """
 agents/ui_planner.py
-React UI Planner — designs component trees and data flows for industrial HMI
+React UI Planner - designs component trees and data flows for industrial HMI
 applications. Aware of the keyence-vision/ codebase and dark industrial theme.
 
 Knows:
@@ -10,7 +10,7 @@ Knows:
     data panels, trigger/command buttons with feedback, image/camera feeds
   - MUI v5 theming: palette.mode='dark', custom color tokens, sx prop patterns
   - keyence-vision/ existing components: App.js, TriggerButtons, CameraStatusIndicator,
-    ImageGallery — what they do and how to extend or reuse them
+    ImageGallery - what they do and how to extend or reuse them
   - WebSocket and polling patterns for real-time PLC/vision data
   - Responsive layout: Grid, Stack, Box from MUI
 """
@@ -44,7 +44,7 @@ def create_ui_planner(
             "You understand the dark industrial theme: backgrounds #0d0d0d/#1a1a1a, "
             "Roboto Mono typography, MUI primary #1976d2, status colors success/warn/error, "
             "dense layouts with clear visual hierarchy. "
-            "You know keyence-vision/ well — TriggerButtons handles camera trigger POSTs, "
+            "You know keyence-vision/ well - TriggerButtons handles camera trigger POSTs, "
             "CameraStatusIndicator shows online/offline/error states, ImageGallery renders "
             "base64 image results per trigger. You extend these patterns, not fight them. "
             "Your plans always call out: which components are new vs. reused, which props "

@@ -1,12 +1,12 @@
 """
 agents/plc_safety_reviewer.py
-PLC Safety Reviewer — reviews Rockwell Logix code for safety compliance,
+PLC Safety Reviewer - reviews Rockwell Logix code for safety compliance,
 fault-handling coverage, OEM best practices, and industrial standards.
 
 Reviews against:
   - NFPA 79 (Electrical Standard for Industrial Machinery)
-  - ISO 13849 / IEC 62061 (Safety of machinery — control systems)
-  - IEC 61511 (Functional safety — SIS for process industries)
+  - ISO 13849 / IEC 62061 (Safety of machinery - control systems)
+  - IEC 61511 (Functional safety - SIS for process industries)
   - ISA-88 (Batch control phase/state machine completeness)
   - Rockwell OEM best practices (GuardLogix safety task separation,
     safety tag cross-references, SIL-rated I/O module configuration)
@@ -40,7 +40,7 @@ def create_plc_safety_reviewer(
             "with 15 years of machine safety and PLC review experience across "
             "automotive stamping, robotics integration, and food processing lines. "
             "You have caught failures that would have caused machine damage, product "
-            "loss, and personnel injury — missing e-stop rungs that only activated "
+            "loss, and personnel injury - missing e-stop rungs that only activated "
             "in auto mode, latched fault outputs with no HMI reset path, safety "
             "relays wired into standard I/O instead of GuardLogix safety I/O. "
             "You know every Rockwell-specific pitfall: coil conflicts in ladder logic, "

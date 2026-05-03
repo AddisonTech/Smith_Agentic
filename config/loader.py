@@ -23,9 +23,9 @@ def get_crew_model(config: dict, crew_name: str) -> str:
     Return the configured model for a given crew name.
 
     Lookup order:
-      1. config["crew_models"][crew_name]  — per-crew assignment in config.yaml
-      2. config["llm_fallback"]["model"]   — fallback if crew not mapped
-      3. "llama3.1:8b"                     — hard default if config is missing keys
+      1. config["crew_models"][crew_name]  - per-crew assignment in config.yaml
+      2. config["llm_fallback"]["model"]   - fallback if crew not mapped
+      3. "llama3.1:8b"                     - hard default if config is missing keys
 
     This is the single point used by all crew builders and the web UI endpoint.
     CLI --model overrides this value after it is resolved.
@@ -42,8 +42,8 @@ def get_target_repo(config: dict) -> str | None:
     Return the resolved absolute path to the target repo, or None if not set.
 
     Lookup order:
-      1. config["_target_repo"]       — set by CLI --target-repo at runtime
-      2. config["crew"]["target_repo"] — from config.yaml (null by default)
+      1. config["_target_repo"]       - set by CLI --target-repo at runtime
+      2. config["crew"]["target_repo"] - from config.yaml (null by default)
     """
     runtime = config.get("_target_repo")
     if runtime:
@@ -59,9 +59,9 @@ def get_agent_model(config: dict, agent_name: str) -> str:
     Return the configured model for a specific agent.
 
     Lookup order:
-      1. config["agent_models"][agent_name]  — per-agent assignment in config.yaml
-      2. config["llm_fallback"]["model"]     — fallback if agent not mapped
-      3. "llama3.1:8b"                       — hard default if config is missing keys
+      1. config["agent_models"][agent_name]  - per-agent assignment in config.yaml
+      2. config["llm_fallback"]["model"]     - fallback if agent not mapped
+      3. "llama3.1:8b"                       - hard default if config is missing keys
     """
     agent_models = config.get("agent_models", {})
     if agent_name in agent_models:

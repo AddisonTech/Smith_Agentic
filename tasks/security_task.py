@@ -1,6 +1,6 @@
 """
 tasks/security_task.py
-Security review task — Security Reviewer audits the deliverable for OWASP Top-10.
+Security review task - Security Reviewer audits the deliverable for OWASP Top-10.
 """
 from __future__ import annotations
 

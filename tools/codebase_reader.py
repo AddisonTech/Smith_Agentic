@@ -62,7 +62,7 @@ class CodebaseReadTool(BaseTool):
     def _run(self, path: str) -> str:
         target = (_REPO_ROOT / path).resolve()
         if not str(target).startswith(str(_REPO_ROOT)):
-            return "Error: Access denied — path is outside the repo root."
+            return "Error: Access denied - path is outside the repo root."
         if not target.exists():
             return f"Error: '{path}' not found."
         if not target.is_file():
@@ -84,7 +84,7 @@ class CodebaseListTool(BaseTool):
     def _run(self, path: str = "") -> str:
         target = (_REPO_ROOT / path).resolve() if path else _REPO_ROOT
         if not str(target).startswith(str(_REPO_ROOT)):
-            return "Error: Access denied — path is outside the repo root."
+            return "Error: Access denied - path is outside the repo root."
         if not target.exists():
             return f"Error: '{path}' not found."
         if not target.is_dir():

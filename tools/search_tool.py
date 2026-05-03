@@ -1,6 +1,6 @@
 """
 tools/search_tool.py
-DuckDuckGo web search — no API key, no account, completely free.
+DuckDuckGo web search - no API key, no account, completely free.
 Falls back gracefully if duckduckgo-search is not installed.
 """
 from __future__ import annotations

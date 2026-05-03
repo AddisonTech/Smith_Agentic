@@ -1,6 +1,6 @@
 """
 memory/scratchpad.py
-Shared blackboard / scratchpad — all agents in a crew can read and write.
+Shared blackboard / scratchpad - all agents in a crew can read and write.
 
 Implements the LbMAS (Layered blackboard Multi-Agent System) pattern. Each agent
 appends its section to a shared JSON file. Other agents read the full scratchpad

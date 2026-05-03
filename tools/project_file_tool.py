@@ -2,7 +2,7 @@
 tools/project_file_tool.py
 File I/O tools scoped to the Smith_Agentic project root.
 
-These tools allow agents to read and write any file within the project —
+These tools allow agents to read and write any file within the project -
 agents/, crews/, tasks/, tools/, memory/, config/, etc.
 
 Used by expansion/build crews that need to create or modify project source files.
@@ -59,7 +59,7 @@ class ProjectFileWriteTool(BaseTool):
         "Write a source file to any directory within the Smith_Agentic project. "
         "Use this to CREATE new agent files, task files, crew files, tool files, "
         "memory modules, and config files. Also use it to MODIFY existing files. "
-        "Provide the path RELATIVE to the project root — no absolute paths, "
+        "Provide the path RELATIVE to the project root - no absolute paths, "
         "no 'Smith_Agentic/' prefix. "
         "Examples: filepath='agents/qa_agent.py', filepath='crews/default_crew.py', "
         "filepath='tasks/qa_task.py', filepath='memory/compartments.py'"
@@ -70,7 +70,7 @@ class ProjectFileWriteTool(BaseTool):
         target = (_PROJECT_ROOT / filepath).resolve()
         # Prevent path traversal outside project root
         if not str(target).startswith(str(_PROJECT_ROOT)):
-            return f"Error: Access denied — '{filepath}' is outside project root."
+            return f"Error: Access denied - '{filepath}' is outside project root."
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         return f"Written: {filepath} ({len(content):,} chars, {content.count(chr(10))+1} lines)"
@@ -89,7 +89,7 @@ class ProjectFileReadTool(BaseTool):
     def _run(self, filepath: str) -> str:
         target = (_PROJECT_ROOT / filepath).resolve()
         if not str(target).startswith(str(_PROJECT_ROOT)):
-            return f"Error: Access denied — '{filepath}' is outside project root."
+            return f"Error: Access denied - '{filepath}' is outside project root."
         if not target.exists():
             return f"Error: '{filepath}' not found in project."
         if not target.is_file():

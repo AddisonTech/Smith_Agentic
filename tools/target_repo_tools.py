@@ -68,7 +68,7 @@ class TargetRepoReadTool(BaseTool):
         root = Path(self.repo_path).resolve()
         target = (root / filepath).resolve()
         if not str(target).startswith(str(root)):
-            return "Error: Access denied — path escapes the target repo root."
+            return "Error: Access denied - path escapes the target repo root."
         if not target.exists():
             return f"Error: '{filepath}' not found in target repo."
         if not target.is_file():
@@ -90,7 +90,7 @@ class TargetRepoWriteTool(BaseTool):
         root = Path(self.repo_path).resolve()
         target = (root / filepath).resolve()
         if not str(target).startswith(str(root)):
-            return "Error: Access denied — path escapes the target repo root."
+            return "Error: Access denied - path escapes the target repo root."
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         return f"Wrote {len(content):,} characters to {filepath}."
@@ -109,7 +109,7 @@ class TargetRepoListTool(BaseTool):
         root = Path(self.repo_path).resolve()
         target = (root / subpath).resolve() if subpath else root
         if not str(target).startswith(str(root)):
-            return "Error: Access denied — path escapes the target repo root."
+            return "Error: Access denied - path escapes the target repo root."
         if not target.exists():
             return f"Error: '{subpath}' does not exist in the target repo."
         if not target.is_dir():

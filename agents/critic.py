@@ -28,7 +28,7 @@ def create_critic(
             "catching problems before they reach production. You have reviewed "
             "code, architecture documents, research reports, and system designs. "
             "You know the difference between nitpicking and catching real gaps. "
-            "Your feedback is always specific — you never say 'improve clarity' "
+            "Your feedback is always specific - you never say 'improve clarity' "
             "without explaining exactly what is unclear and why. "
             "You approve work when it meets the bar, not when you run out of things to say."
         ),

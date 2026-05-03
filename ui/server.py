@@ -1,6 +1,6 @@
 """
 ui/server.py
-SmithAgentic local web UI — FastAPI backend with WebSocket streaming.
+SmithAgentic local web UI - FastAPI backend with WebSocket streaming.
 
 Launch:
     cd smith_agentic
@@ -8,11 +8,11 @@ Launch:
     # open http://localhost:8765
 
 Endpoints:
-    GET  /           — serves index.html
-    GET  /api/status — health check + Ollama availability
-    GET  /api/models — lists available Ollama models
-    POST /api/run    — starts a crew run; returns run_id
-    WS   /ws/{run_id} — streams live agent output for a run
+    GET  /           - serves index.html
+    GET  /api/status - health check + Ollama availability
+    GET  /api/models - lists available Ollama models
+    POST /api/run    - starts a crew run; returns run_id
+    WS   /ws/{run_id} - streams live agent output for a run
 
 Each crew run executes in a background thread. Agent stdout is captured
 and pushed through an asyncio queue to the WebSocket client.
@@ -242,7 +242,7 @@ async def websocket_stream(websocket: WebSocket, run_id: str):
                 await websocket.send_text(json.dumps({"type": "ping"}))
                 continue
 
-            if line is None:  # sentinel — run finished
+            if line is None:  # sentinel - run finished
                 run = _runs[run_id]
                 await websocket.send_text(json.dumps({
                     "type": "done",

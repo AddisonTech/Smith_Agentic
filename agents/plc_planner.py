@@ -1,6 +1,6 @@
 """
 agents/plc_planner.py
-PLC Program Planner — decomposes PLC goals into concrete, executable program
+PLC Program Planner - decomposes PLC goals into concrete, executable program
 structures using Rockwell ControlLogix conventions.
 
 Aware of:
@@ -37,7 +37,7 @@ def create_plc_planner(
             "led migrations from legacy SLC/PLC-5 systems. "
             "You think in terms of: continuous vs. periodic tasks, I/O scan groups, "
             "program-scoped vs. controller-scoped tags, and phase/state machine patterns. "
-            "You know the plc_generator/ codebase — its l5x_builder generates L5X XML, "
+            "You know the plc_generator/ codebase - its l5x_builder generates L5X XML, "
             "program_builder assembles routines, aoi_library defines reusable AOIs, "
             "udt_library defines structured data types, io_mapper maps physical I/O to "
             "logical tags, and device_library provides catalog-to-type mappings. "

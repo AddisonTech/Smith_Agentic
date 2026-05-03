@@ -1,15 +1,15 @@
 """
 crews/vision_crew.py
-Vision Inspection crew — orchestrates the Vision_Inspect backend for automated
+Vision Inspection crew - orchestrates the Vision_Inspect backend for automated
 defect analysis, report generation, and pipeline QA.
 
 Requires the Vision_Inspect FastAPI service running at http://localhost:8000.
 Start it with: cd ../Vision_Inspect && uvicorn backend.main:app --port 8000
 
 Flow:
-  1. Vision Analyst     — queries /inspections, parses defect results, writes vision_findings.md
-  2. Vision Reporter    — synthesizes findings + memory trends, writes inspection_report.md
-  3. Vision QA Validator — health-checks API, audits report, flags anomalies, writes vision_qa_report.md
+  1. Vision Analyst     - queries /inspections, parses defect results, writes vision_findings.md
+  2. Vision Reporter    - synthesizes findings + memory trends, writes inspection_report.md
+  3. Vision QA Validator - health-checks API, audits report, flags anomalies, writes vision_qa_report.md
 """
 from __future__ import annotations
 
@@ -99,7 +99,7 @@ class VisionInspectAPITool(BaseTool):
                 "the Vision_Inspect directory."
             )
         except httpx.HTTPStatusError as exc:
-            return f"Error: HTTP {exc.response.status_code} — {exc.response.text}"
+            return f"Error: HTTP {exc.response.status_code} - {exc.response.text}"
         except Exception as exc:  # noqa: BLE001
             return f"Error: {type(exc).__name__}: {exc}"
 

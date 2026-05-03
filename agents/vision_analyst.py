@@ -1,6 +1,6 @@
 """
 agents/vision_analyst.py
-Vision Analyst — queries the Vision_Inspect API to retrieve inspection results,
+Vision Analyst - queries the Vision_Inspect API to retrieve inspection results,
 parses defect classifications, and produces a structured findings summary.
 
 Talks to the Vision_Inspect FastAPI backend at http://localhost:8000 using the
@@ -32,7 +32,7 @@ def create_vision_analyst(
         backstory=(
             "You are a machine-vision data analyst with deep experience in industrial "
             "quality control systems. You know how to translate raw VLM inference "
-            "results — bounding boxes, confidence scores, defect classifications — "
+            "results - bounding boxes, confidence scores, defect classifications - "
             "into operational findings that line supervisors and engineers can act on. "
             "You are precise, methodical, and never confuse a marginal detection with "
             "a confirmed defect. Your summaries always include the numbers, not just "

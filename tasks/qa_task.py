@@ -1,6 +1,6 @@
 """
 tasks/qa_task.py
-QA validation task — QA Sentinel executes and validates the deliverable.
+QA validation task - QA Sentinel executes and validates the deliverable.
 """
 from __future__ import annotations
 

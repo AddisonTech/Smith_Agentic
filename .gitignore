@@ -14,8 +14,9 @@ env/
 # ChromaDB storage
 memory/chroma/
 
-# Output checkpoints (keep reports, ignore run state)
-outputs/checkpoints/
+# Run outputs (keep the directory via .gitkeep, ignore the contents)
+outputs/*
+!outputs/.gitkeep
 
 # IDE
 .vscode/

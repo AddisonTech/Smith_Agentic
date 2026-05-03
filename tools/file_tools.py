@@ -1,7 +1,7 @@
 """
 tools/file_tools.py
 File I/O tools scoped to the outputs/ directory.
-Agents can read, write, and list files — nothing outside outputs/ is accessible.
+Agents can read, write, and list files - nothing outside outputs/ is accessible.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ _OUTPUTS_DIR.mkdir(exist_ok=True)
 
 class _ReadInput(BaseModel):
     filepath: str = Field(
-        description="Filename only — do NOT include 'outputs/' prefix. "
+        description="Filename only - do NOT include 'outputs/' prefix. "
                     "The tool already scopes to outputs/. "
                     "Correct: 'research.md'. Wrong: 'outputs/research.md'."
     )
@@ -27,7 +27,7 @@ class _ReadInput(BaseModel):
 
 class _WriteInput(BaseModel):
     filepath: str = Field(
-        description="Filename only — do NOT include 'outputs/' prefix. "
+        description="Filename only - do NOT include 'outputs/' prefix. "
                     "The tool already scopes to outputs/. "
                     "Correct: 'deliverable.md'. Wrong: 'outputs/deliverable.md'."
     )
@@ -52,7 +52,7 @@ class FileReadTool(BaseTool):
         target = (_OUTPUTS_DIR / filepath).resolve()
         # Prevent path traversal outside outputs/
         if not str(target).startswith(str(_OUTPUTS_DIR)):
-            return "Error: Access denied — path is outside outputs/."
+            return "Error: Access denied - path is outside outputs/."
         if not target.exists():
             return f"Error: '{filepath}' not found in outputs/."
         return target.read_text(encoding="utf-8")
@@ -70,7 +70,7 @@ class FileWriteTool(BaseTool):
     def _run(self, filepath: str, content: str) -> str:
         target = (_OUTPUTS_DIR / filepath).resolve()
         if not str(target).startswith(str(_OUTPUTS_DIR)):
-            return "Error: Access denied — path is outside outputs/."
+            return "Error: Access denied - path is outside outputs/."
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         return f"Saved {len(content):,} characters to outputs/{filepath}."
@@ -87,5 +87,5 @@ class FileListTool(BaseTool):
     def _run(self, **kwargs) -> str:
         files = sorted(f for f in _OUTPUTS_DIR.rglob("*") if f.is_file() and f.name != ".gitkeep")
         if not files:
-            return "outputs/ is empty — nothing has been saved yet."
+            return "outputs/ is empty - nothing has been saved yet."
         return "\n".join(str(f.relative_to(_OUTPUTS_DIR)) for f in files)

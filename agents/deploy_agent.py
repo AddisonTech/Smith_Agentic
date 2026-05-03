@@ -1,6 +1,6 @@
 """
 agents/deploy_agent.py
-Deployment Validator agent — validates code artifacts are deployment-ready.
+Deployment Validator agent - validates code artifacts are deployment-ready.
 Issues DEPLOY_READY or DEPLOY_BLOCKED with numbered findings.
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ def create_deploy_agent(
             "You are a DevOps engineer and build systems specialist who validates code "
             "artifacts before deployment. You run compile checks, static analysis, and "
             "import validation. You block deployment on import errors, syntax errors, "
-            "and missing dependencies. You do not care about style — only whether "
+            "and missing dependencies. You do not care about style - only whether "
             "the code can actually be built and run."
         ),
         llm=llm,

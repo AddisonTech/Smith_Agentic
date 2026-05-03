@@ -1,6 +1,6 @@
 """
 tools/git_tool.py
-Git operations via GitPython — stage, commit, push, and status.
+Git operations via GitPython - stage, commit, push, and status.
 
 The repo_path is set at tool creation time and defaults to the parent
 of smith_agentic/ (the Standards-PLC repo root). Agents cannot change the
@@ -43,7 +43,7 @@ class _PushInput(BaseModel):
 class GitStatusTool(BaseTool):
     name: str = "Git Status"
     description: str = (
-        "Show the current git status of the repository — staged, unstaged, and untracked files."
+        "Show the current git status of the repository - staged, unstaged, and untracked files."
     )
     args_schema: Type[BaseModel] = _StatusInput
     repo_path: str = str(_DEFAULT_REPO)
@@ -119,7 +119,7 @@ class GitCommitTool(BaseTool):
             if not repo.index.diff("HEAD") and not repo.index.diff(None):
                 return "Nothing staged to commit."
             commit = repo.index.commit(message)
-            return f"Committed: {commit.hexsha[:8]} — {message}"
+            return f"Committed: {commit.hexsha[:8]} - {message}"
         except ImportError:
             return "GitPython not installed. Run: pip install gitpython"
         except Exception as e:

@@ -1,6 +1,6 @@
 """
 tasks/docs_task.py
-Documentation task — Documentation Writer generates structured docs for the deliverable.
+Documentation task - Documentation Writer generates structured docs for the deliverable.
 """
 from __future__ import annotations
 

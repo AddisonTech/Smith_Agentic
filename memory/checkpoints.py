@@ -1,6 +1,6 @@
 """
 memory/checkpoints.py
-Task checkpoint manager — save and resume crew task state.
+Task checkpoint manager - save and resume crew task state.
 
 Each completed task writes its output to a JSON checkpoint file so that if the
 run is interrupted, it can resume from the last completed task rather than

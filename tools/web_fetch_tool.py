@@ -4,7 +4,7 @@ Fetches a URL and returns the full page body as clean plain text,
 stripped of HTML tags and truncated to ~3000 tokens (~12,000 chars).
 
 Designed to be used by the Researcher agent after WebSearchTool returns
-URLs — fetch the top 2-3 results to get full article content rather than
+URLs - fetch the top 2-3 results to get full article content rather than
 relying on DuckDuckGo's short snippets.
 """
 from __future__ import annotations
@@ -56,7 +56,7 @@ class WebFetchTool(BaseTool):
     def _run(self, url: str) -> str:
         # Basic URL sanity check
         if not url.startswith(("http://", "https://")):
-            return f"Error: Invalid URL '{url}' — must start with http:// or https://"
+            return f"Error: Invalid URL '{url}' - must start with http:// or https://"
 
         try:
             response = requests.get(url, headers=_HEADERS, timeout=10, allow_redirects=True)
@@ -66,12 +66,12 @@ class WebFetchTool(BaseTool):
         except requests.exceptions.HTTPError as e:
             return f"Error: HTTP {e.response.status_code} fetching {url}"
         except requests.exceptions.RequestException as e:
-            return f"Error: Could not fetch {url} — {e}"
+            return f"Error: Could not fetch {url} - {e}"
 
         # Only parse HTML/text responses
         content_type = response.headers.get("Content-Type", "")
         if "text/html" not in content_type and "text/plain" not in content_type:
-            return f"Error: Non-HTML content type '{content_type}' at {url} — skipping."
+            return f"Error: Non-HTML content type '{content_type}' at {url} - skipping."
 
         soup = BeautifulSoup(response.text, "lxml")
 

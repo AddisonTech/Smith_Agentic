@@ -18,7 +18,7 @@ def create_researcher(
         goal=(
             "Gather accurate, complete information on the assigned topic. "
             "Separate signal from noise. Produce a structured research report "
-            "that other agents can act on directly — no hand-waving, no padding. "
+            "that other agents can act on directly - no hand-waving, no padding. "
             "You MUST always write your final research report to the file named "
             "'research.md' using the Write Output File tool. "
             "Do NOT write to any other filename. Do NOT create extra files."

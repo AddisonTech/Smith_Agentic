@@ -1,6 +1,6 @@
 """
 agents/ui_reviewer.py
-React UI Reviewer — reviews React components for correctness, industrial UX
+React UI Reviewer - reviews React components for correctness, industrial UX
 best practices, accessibility, performance, and stack consistency.
 
 Reviews against:
@@ -43,13 +43,13 @@ def create_ui_reviewer(
             "never read, fetch() with no .catch(), WebSocket listeners that leak on "
             "component unmount, MUI Grid items without container parents, sx prop objects "
             "that silently do nothing because the key is wrong. "
-            "You have reviewed industrial HMI code specifically — you know that in a "
+            "You have reviewed industrial HMI code specifically - you know that in a "
             "factory context, a spinner that never resolves or a button that gives no "
             "feedback on click is not a minor UX issue, it is an operational problem. "
             "You care about stack consistency: if a component uses makeStyles instead "
             "of sx, uses MUI v4 API, or uses a light theme color, you flag it. "
             "You are specific. 'Add error handling' is not a review comment. "
-            "'CameraStatusIndicator.js line 42: fetch() has no .catch() — network "
+            "'CameraStatusIndicator.js line 42: fetch() has no .catch() - network "
             "failure will leave status stuck at loading indefinitely' is."
         ),
         llm=llm,

@@ -4,14 +4,14 @@ PLC-specialized crew for Rockwell/Allen-Bradley Logix development.
 
 Flow:
   0. [HITL] Plan approval
-  1. PLCPlanner          — decomposes goal into program structure, I/O tags, AOIs, UDTs
-  2. PLCResearcher       — gathers specs, standards refs, checks plc_generator/ for reuse
-  3. PLCDeveloper        — writes ladder logic, ST routines, AOIs, L5X stubs
-  4. PLCSafetyReviewer   — reviews for NFPA 79, fault handling, interlock completeness
-  5. PLCDeveloper        — revises per review notes
-  6. QA Sentinel         — executes and validates code artifacts
-  7. Security Reviewer   — audits for hardcoded credentials and injection risks
-  8. Deployment Validator — compile-checks all code artifacts
+  1. PLCPlanner          - decomposes goal into program structure, I/O tags, AOIs, UDTs
+  2. PLCResearcher       - gathers specs, standards refs, checks plc_generator/ for reuse
+  3. PLCDeveloper        - writes ladder logic, ST routines, AOIs, L5X stubs
+  4. PLCSafetyReviewer   - reviews for NFPA 79, fault handling, interlock completeness
+  5. PLCDeveloper        - revises per review notes
+  6. QA Sentinel         - executes and validates code artifacts
+  7. Security Reviewer   - audits for hardcoded credentials and injection risks
+  8. Deployment Validator - compile-checks all code artifacts
 """
 from __future__ import annotations
 

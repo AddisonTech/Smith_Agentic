@@ -1,6 +1,6 @@
 """
 tasks/observability_task.py
-Observability task — Observability Monitor analyzes the full run audit trail.
+Observability task - Observability Monitor analyzes the full run audit trail.
 """
 from __future__ import annotations
 

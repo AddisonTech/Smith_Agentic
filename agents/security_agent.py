@@ -1,6 +1,6 @@
 """
 agents/security_agent.py
-Security Reviewer agent — OWASP Top-10 code audit.
+Security Reviewer agent - OWASP Top-10 code audit.
 Issues SECURITY_BLOCK, SECURITY_PASS_WITH_WARNINGS, or SECURITY_PASS.
 """
 from __future__ import annotations

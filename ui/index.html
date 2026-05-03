@@ -187,7 +187,7 @@ function App() {
 
   // ── Auto-switch model when crew changes ────────────────────────────────────
   useEffect(() => {
-    if (modelOverridden) return;  // user manually chose a model — don't override
+    if (modelOverridden) return;  // user manually chose a model - don't override
     const preferred = crewDefaults[crew];
     if (!preferred) return;
     // Use the crew's preferred model if it's installed, otherwise keep current
@@ -201,7 +201,7 @@ function App() {
 
   function handleModelChange(newModel) {
     setModel(newModel);
-    setModelOverridden(true);   // user manually chose — stop auto-switching
+    setModelOverridden(true);   // user manually chose - stop auto-switching
   }
 
   // ── Auto-scroll terminal ───────────────────────────────────────────────────
@@ -312,7 +312,7 @@ function App() {
                 )}
               </div>
               <select value={model} onChange={e => handleModelChange(e.target.value)} disabled={isRunning}>
-                {models.length === 0 && <option value="">— no models —</option>}
+                {models.length === 0 && <option value="">- no models -</option>}
                 {models.map(m => (
                   <option key={m} value={m}>
                     {m}{crewDefaults[crew] === m ? ' ★' : ''}
@@ -348,7 +348,7 @@ function App() {
           {/* Output files */}
           <div className="section-title">Output Files</div>
           {files.length === 0 ? (
-            <div style={{fontSize:12,color:'var(--muted)'}}>No files yet — files appear here after the run completes.</div>
+            <div style={{fontSize:12,color:'var(--muted)'}}>No files yet - files appear here after the run completes.</div>
           ) : (
             <div className="files-list">
               {files.map(f => (

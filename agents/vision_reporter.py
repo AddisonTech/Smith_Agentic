@@ -1,6 +1,6 @@
 """
 agents/vision_reporter.py
-Vision Reporter — synthesizes Vision Analyst findings into a structured, human-readable
+Vision Reporter - synthesizes Vision Analyst findings into a structured, human-readable
 inspection report suitable for quality management review.
 
 The Reporter reads vision_findings.md produced by the Analyst, enriches it with
@@ -22,7 +22,7 @@ def create_vision_reporter(
             "Read 'vision_findings.md' from the output directory using the "
             "'Read Output File' tool. "
             "Query ChromaDB memory for prior inspection trends using the "
-            "'Memory Query' tool — look for patterns in defect rates, recurring zones, "
+            "'Memory Query' tool - look for patterns in defect rates, recurring zones, "
             "and seasonal shifts. "
             "Synthesize findings + trend context into a complete inspection report "
             "structured as: Executive Summary, Inspection Statistics, Defect Analysis, "

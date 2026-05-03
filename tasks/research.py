@@ -1,6 +1,6 @@
 """
 tasks/research.py
-Research task — Researcher gathers information based on the plan and saves
+Research task - Researcher gathers information based on the plan and saves
 findings to outputs/research.md.
 """
 from __future__ import annotations
@@ -22,18 +22,18 @@ def create_research_task(
             "REQUIRED research workflow:\n"
             "1. Use 'Web Search' to find relevant sources (run multiple targeted queries).\n"
             "2. For each search, use 'Fetch Web Page' on the top 2-3 result URLs to retrieve "
-            "   the FULL article content — do not rely on search snippets alone.\n"
+            "   the FULL article content - do not rely on search snippets alone.\n"
             "3. Synthesize findings from the full page content into your report. "
             "   Cite real URLs from pages you fetched.\n\n"
             "Structure your findings as:\n\n"
-            "1. BACKGROUND — Key concepts, definitions, and domain knowledge\n"
-            "2. BEST PRACTICES — Established approaches, patterns, standards\n"
-            "3. TOOLS & REFERENCES — Relevant libraries, frameworks, examples, "
+            "1. BACKGROUND - Key concepts, definitions, and domain knowledge\n"
+            "2. BEST PRACTICES - Established approaches, patterns, standards\n"
+            "3. TOOLS & REFERENCES - Relevant libraries, frameworks, examples, "
             "   documentation links with real URLs\n"
-            "4. PITFALLS — Known failure modes, gotchas, and things to avoid\n"
-            "5. SUMMARY — 3–5 bullet points the Builder needs most\n\n"
+            "4. PITFALLS - Known failure modes, gotchas, and things to avoid\n"
+            "5. SUMMARY - 3–5 bullet points the Builder needs most\n\n"
             "CRITICAL: You MUST use the 'Write Output File' tool to save your report. "
-            "The filepath MUST be exactly 'research.md' — nothing else. "
+            "The filepath MUST be exactly 'research.md' - nothing else. "
             "Not 'outputs/research.md', not any other name. Exactly: 'research.md'. "
             "This is non-negotiable. Overwrite it if it already exists. "
             "Do NOT create any other files during this task. "

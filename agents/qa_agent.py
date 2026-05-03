@@ -1,6 +1,6 @@
 """
 agents/qa_agent.py
-QA Sentinel agent — executes and validates generated code artifacts.
+QA Sentinel agent - executes and validates generated code artifacts.
 Blocks the pipeline on crashes, import errors, or syntax failures.
 """
 from __future__ import annotations

@@ -6,8 +6,8 @@ All entries are tagged with a session_id so memories from different runs
 can be distinguished. The store persists to disk at memory/chroma/.
 
 Tools exported:
-    MemoryStoreTool  — save a key insight to memory
-    MemoryQueryTool  — retrieve relevant memories for a topic
+    MemoryStoreTool  - save a key insight to memory
+    MemoryQueryTool  - retrieve relevant memories for a topic
 """
 from __future__ import annotations
 
@@ -80,7 +80,7 @@ class MemoryStoreTool(BaseTool):
     def _run(self, content: str, topic: str) -> str:
         col = _get_collection(self.persist_dir, self.collection_name)
         if col is None:
-            return "Memory disabled — chromadb not installed. Install with: pip install chromadb"
+            return "Memory disabled - chromadb not installed. Install with: pip install chromadb"
 
         entry_id = f"{_SESSION_ID}-{uuid.uuid4().hex[:8]}"
         col.add(
@@ -106,11 +106,11 @@ class MemoryQueryTool(BaseTool):
     def _run(self, query: str, n_results: int = 5) -> str:
         col = _get_collection(self.persist_dir, self.collection_name)
         if col is None:
-            return "Memory disabled — chromadb not installed."
+            return "Memory disabled - chromadb not installed."
 
         count = col.count()
         if count == 0:
-            return "Memory is empty — no past entries found."
+            return "Memory is empty - no past entries found."
 
         results = col.query(
             query_texts=[query],

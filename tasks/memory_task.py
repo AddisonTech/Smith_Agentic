@@ -1,6 +1,6 @@
 """
 tasks/memory_task.py
-Memory consolidation task — Memory Manager stores key run findings to persistent memory.
+Memory consolidation task - Memory Manager stores key run findings to persistent memory.
 """
 from __future__ import annotations
 

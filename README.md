@@ -1,4 +1,4 @@
-# SmithAgentic — Local Multi-Agent AI System
+# SmithAgentic - Local Multi-Agent AI System
 
 A fully local, open-source multi-agent AI system built on **CrewAI** + **Ollama**.
 No paid APIs. No cloud dependencies. Everything runs on your machine.
@@ -7,7 +7,7 @@ No paid APIs. No cloud dependencies. Everything runs on your machine.
 
 ## What it does
 
-You give it a goal. A crew of specialized agents works through it — planning, researching, building, reviewing, validating, and documenting — entirely locally via Ollama.
+You give it a goal. A crew of specialized agents works through it - planning, researching, building, reviewing, validating, and documenting - entirely locally via Ollama.
 
 All outputs are saved to `outputs/` as markdown or code files.
 
@@ -84,7 +84,7 @@ All outputs are saved to `outputs/` as markdown or code files.
 |---|---|
 | **ChromaDB Memory** | Agents store and query insights across sessions via `memory/chroma/` |
 | **MIRIX Compartments** | 6-compartment memory (core/episodic/semantic/procedural/resource/knowledge_vault) |
-| **Task Checkpointing** | Each task saves state to `outputs/checkpoints/` — resume on failure |
+| **Task Checkpointing** | Each task saves state to `outputs/checkpoints/` - resume on failure |
 | **Shared Scratchpad** | All agents in a crew read/write a shared blackboard (LbMAS pattern) |
 | **Reflexion Loop** | Default crew runs 2 critique/revise rounds before specialist pipeline |
 | **Per-Agent Routing** | Each agent uses its optimal model tier (configured in `agent_models:`) |
@@ -135,7 +135,7 @@ ollama serve
 
 ---
 
-## Running — CLI
+## Running - CLI
 
 ```bash
 # Default crew
@@ -162,7 +162,7 @@ python main.py --goal "..." --no-verbose
 
 ---
 
-## Running — Web UI
+## Running - Web UI
 
 ```bash
 python ui/server.py
@@ -208,8 +208,8 @@ Before the full crew runs, the Orchestrator generates an execution plan and show
 
 Agents automatically store key findings and recall relevant past work:
 
-- **MemoryStoreTool** — saves insights with a topic tag + session ID
-- **MemoryQueryTool** — retrieves semantically similar past memories
+- **MemoryStoreTool** - saves insights with a topic tag + session ID
+- **MemoryQueryTool** - retrieves semantically similar past memories
 - Persists to `memory/chroma/` across runs
 - Session ID tags let you distinguish different run histories
 
@@ -236,7 +236,7 @@ memory:
 
 ## Models
 
-Each crew runs on its optimal model by default. Models are configured in `config/config.yaml` under `crew_models` — no code changes needed to swap them.
+Each crew runs on its optimal model by default. Models are configured in `config/config.yaml` under `crew_models` - no code changes needed to swap them.
 
 Per-crew defaults (set in `crew_models:`) and per-agent routing (set in `agent_models:`):
 
@@ -244,7 +244,7 @@ Per-crew defaults (set in `crew_models:`) and per-agent routing (set in `agent_m
 |---|---|---|
 | **default** | `qwen2.5:32b` (plan/research) + `qwen2.5-coder:14b` (build) | Full reasoning for planning; specialized coder for generation |
 | **plc** | `qwen2.5:14b` | Strong reasoning + tool calling for safety-critical PLC work |
-| **react** | `qwen2.5-coder:14b` | Purpose-built for code generation — React/JS/TS |
+| **react** | `qwen2.5-coder:14b` | Purpose-built for code generation - React/JS/TS |
 
 **Pull the recommended models:**
 
@@ -261,7 +261,7 @@ ollama pull llama3.1:8b          # fast specialist agents (QA, Docs, Memory, Obs
 python main.py --goal "..." --model qwen2.5:14b
 ```
 
-**Swap a crew's default permanently** — edit `config/config.yaml`:
+**Swap a crew's default permanently** - edit `config/config.yaml`:
 
 ```yaml
 crew_models:
@@ -270,7 +270,7 @@ crew_models:
   react:   qwen2.5-coder:14b   # ← change this
 ```
 
-**Web UI** — the model selector auto-switches to the configured default when you change crews. You can still select any installed model manually.
+**Web UI** - the model selector auto-switches to the configured default when you change crews. You can still select any installed model manually.
 
 **Fallback models** (if 14B models aren't available):
 
@@ -462,7 +462,7 @@ Run `ollama serve` in a separate terminal. The default URL is `http://localhost:
 On some systems: `pip install chromadb --no-build-isolation`. If it still fails, set `memory.enabled: false` in config.yaml to disable memory entirely.
 
 **Web UI shows blank / won't load**
-Make sure `python ui/server.py` is running and port 8765 is not blocked. The UI uses CDN React — you need an internet connection on first load.
+Make sure `python ui/server.py` is running and port 8765 is not blocked. The UI uses CDN React - you need an internet connection on first load.
 
 **Runs are slow**
 - Use a smaller model (`llama3.1:8b`, `mistral:7b`)

@@ -1,6 +1,6 @@
 """
 agents/docs_agent.py
-Documentation Writer agent — generates structured markdown documentation.
+Documentation Writer agent - generates structured markdown documentation.
 Implements the DocAgent ACL 2025 Reader/Writer/Verifier pattern.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ def create_docs_agent(
             "inline docstring suggestions for any functions/classes, API reference for any "
             "endpoints, and a working quickstart example. "
             "Write all output to 'docs/deliverable_docs.md' using Write Output File. "
-            "Never summarize — produce complete, actionable docs."
+            "Never summarize - produce complete, actionable docs."
         ),
         backstory=(
             "You are a technical writer and developer with 10 years of experience producing "

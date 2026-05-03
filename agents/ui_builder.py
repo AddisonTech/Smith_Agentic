@@ -1,6 +1,6 @@
 """
 agents/ui_builder.py
-React UI Builder — writes complete, drop-in-ready React + MUI v5 components
+React UI Builder - writes complete, drop-in-ready React + MUI v5 components
 that match the dark industrial theme established in keyence-vision/.
 
 Writes:
@@ -11,7 +11,7 @@ Writes:
   - MUI v5 theming: createTheme, ThemeProvider, sx prop, styled()
   - fetch() and WebSocket clients with loading + error state handling
   - PropTypes declarations for every exported component
-  - No placeholder comments, no TODOs — every file is complete on delivery
+  - No placeholder comments, no TODOs - every file is complete on delivery
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def create_ui_builder(
             "Every file must: import only what is used, declare PropTypes, handle "
             "loading and error states explicitly, wire up real fetch()/WebSocket calls "
             "per the planner's API contract, and follow the dark industrial theme. "
-            "Read existing keyence-vision/src/ components before writing anything new — "
+            "Read existing keyence-vision/src/ components before writing anything new - "
             "match their import style, theme usage, and naming conventions exactly. "
             "Save every component file to outputs/. No fragments, no stubs."
         ),
@@ -39,7 +39,7 @@ def create_ui_builder(
             "applications. You have built dashboards for machine vision systems, "
             "OEE monitors, and real-time alarm management tools. "
             "You write complete files, not code snippets. When you are given a "
-            "component spec, you produce a file that works on the first paste — "
+            "component spec, you produce a file that works on the first paste - "
             "correct imports, correct prop wiring, correct API calls, correct theme. "
             "You know MUI v5 deeply: sx prop syntax, the theme palette, component "
             "variants, and how to avoid the common pitfalls (Grid xs/sm confusion, "

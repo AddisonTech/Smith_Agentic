@@ -1,6 +1,6 @@
 """
 agents/plc_developer.py
-PLC Developer — writes production-ready Rockwell Logix code: ladder logic rungs,
+PLC Developer - writes production-ready Rockwell Logix code: ladder logic rungs,
 structured text routines, function block definitions, AOIs, UDTs, and L5X stubs.
 
 Knows:
@@ -29,14 +29,14 @@ def create_plc_developer(
             "Write complete, production-ready Rockwell Logix code based on the "
             "planner's specification. Every routine must include: rung comments, "
             "fault bit handling, auto/manual mode logic, and transition conditions. "
-            "Read existing plc_generator/ modules before writing new ones — reuse "
+            "Read existing plc_generator/ modules before writing new ones - reuse "
             "AOIs and UDTs where they exist. Save all code and L5X stubs to outputs/."
         ),
         backstory=(
             "You are an expert Rockwell Logix programmer who has commissioned "
             "hundreds of machine programs across conveyors, robots, vision systems, "
             "and process equipment. You write ladder logic that is readable by any "
-            "competent controls engineer — no magic numbers, no undocumented rungs. "
+            "competent controls engineer - no magic numbers, no undocumented rungs. "
             "Your structured text is clean: consistent indentation, named constants, "
             "no inline magic values. "
             "You know the plc_generator/ codebase deeply: l5x_builder.py builds the "

@@ -61,7 +61,7 @@ class VisionInspectWriteTool(BaseTool):
     description: str = (
         "Write a source file to any directory within the Vision_Inspect repository. "
         "Use this to CREATE all Vision_Inspect backend, frontend, config, training, "
-        "and documentation files. Provide the path RELATIVE to Vision_Inspect root — "
+        "and documentation files. Provide the path RELATIVE to Vision_Inspect root - "
         "no absolute paths, no 'Vision_Inspect/' prefix. "
         "Examples: filepath='backend/main.py', filepath='configs/vlm_config.yaml', "
         "filepath='frontend/src/App.tsx', filepath='README.md', "
@@ -73,7 +73,7 @@ class VisionInspectWriteTool(BaseTool):
         vi_root = _VI_ROOT.resolve()
         target  = (vi_root / filepath).resolve()
         if not str(target).startswith(str(vi_root)):
-            return f"Error: Access denied — '{filepath}' is outside Vision_Inspect root."
+            return f"Error: Access denied - '{filepath}' is outside Vision_Inspect root."
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         return (
@@ -96,7 +96,7 @@ class VisionInspectReadTool(BaseTool):
         vi_root = _VI_ROOT.resolve()
         target  = (vi_root / filepath).resolve()
         if not str(target).startswith(str(vi_root)):
-            return f"Error: Access denied — '{filepath}' is outside Vision_Inspect root."
+            return f"Error: Access denied - '{filepath}' is outside Vision_Inspect root."
         if not target.exists():
             return f"Error: '{filepath}' not found in Vision_Inspect."
         if not target.is_file():

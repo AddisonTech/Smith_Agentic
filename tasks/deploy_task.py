@@ -1,6 +1,6 @@
 """
 tasks/deploy_task.py
-Deployment validation task — Deployment Validator checks artifacts are deployable.
+Deployment validation task - Deployment Validator checks artifacts are deployable.
 """
 from __future__ import annotations
 

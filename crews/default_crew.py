@@ -4,19 +4,19 @@ Default crew: full expanded pipeline with Reflexion loop and all specialist agen
 
 Flow:
   0. [HITL] Plan approval loop (skipped with --no-hitl)
-  1.  plan_task          — Orchestrator breaks goal into execution plan
-  2.  research_task      — Researcher gathers info, saves outputs/research.md
-  3.  build_task         — Builder produces deliverable, saves outputs/deliverable.md
-  4.  critique_task      — Critic reviews, saves outputs/critique.md
-  5.  revise_task        — Builder revises per critique (Reflexion round 1)
-  6.  critique_task2     — Critic re-reviews revised output
-  7.  revise_task2       — Builder applies second revision (Reflexion round 2)
-  8.  qa_task            — QA Sentinel executes code, issues SENTINEL_PASS/BLOCK
-  9.  security_task      — Security Reviewer audits, issues SECURITY_PASS/BLOCK
-  10. deploy_task        — Deployment Validator compile-checks, issues DEPLOY_READY/BLOCKED
-  11. docs_task          — Documentation Writer generates structured docs
-  12. memory_task        — Memory Manager consolidates run into persistent memory
-  13. observability_task — Observability Monitor produces telemetry report
+  1.  plan_task          - Orchestrator breaks goal into execution plan
+  2.  research_task      - Researcher gathers info, saves outputs/research.md
+  3.  build_task         - Builder produces deliverable, saves outputs/deliverable.md
+  4.  critique_task      - Critic reviews, saves outputs/critique.md
+  5.  revise_task        - Builder revises per critique (Reflexion round 1)
+  6.  critique_task2     - Critic re-reviews revised output
+  7.  revise_task2       - Builder applies second revision (Reflexion round 2)
+  8.  qa_task            - QA Sentinel executes code, issues SENTINEL_PASS/BLOCK
+  9.  security_task      - Security Reviewer audits, issues SECURITY_PASS/BLOCK
+  10. deploy_task        - Deployment Validator compile-checks, issues DEPLOY_READY/BLOCKED
+  11. docs_task          - Documentation Writer generates structured docs
+  12. memory_task        - Memory Manager consolidates run into persistent memory
+  13. observability_task - Observability Monitor produces telemetry report
 """
 from __future__ import annotations
 
@@ -120,7 +120,7 @@ def build_crew(goal: str, config: dict) -> Crew:
     # ── HITL Plan Approval ────────────────────────────────────────────────────
     approved_goal = approve_plan(goal, orchestrator, llm_orch, config)
 
-    # ── Tasks — Reflexion Loop (2 critique/revise rounds) ────────────────────
+    # ── Tasks - Reflexion Loop (2 critique/revise rounds) ────────────────────
     plan_task      = create_plan_task(orchestrator, approved_goal)
     research_task  = create_research_task(researcher, approved_goal, context=[plan_task])
     build_task     = create_build_task(builder, approved_goal, context=[plan_task, research_task])
@@ -129,7 +129,7 @@ def build_crew(goal: str, config: dict) -> Crew:
     critique_task2 = create_critique_task(critic, approved_goal, context=[plan_task, revise_task])
     revise_task2   = create_revise_task(builder, approved_goal, context=[plan_task, build_task, critique_task2])
 
-    # ── Tasks — Specialist Pipeline ────────────────────────────────────────────
+    # ── Tasks - Specialist Pipeline ────────────────────────────────────────────
     qa_task      = create_qa_task(qa_agent, approved_goal, context=[plan_task, revise_task2])
     security_task = create_security_task(security_agent, approved_goal, context=[plan_task, revise_task2])
     deploy_task  = create_deploy_task(deploy_agent, approved_goal, context=[plan_task, revise_task2])

@@ -3,7 +3,7 @@ agents/orchestrator.py
 The Orchestrator decomposes a high-level goal into a concrete execution plan
 and synthesizes the crew's final output.
 
-To add a new behavior: adjust role/goal/backstory here — no other file needs
+To add a new behavior: adjust role/goal/backstory here - no other file needs
 to change unless you add a new task type.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ def create_orchestrator(
         goal=(
             "Decompose complex goals into a clear, ordered execution plan. "
             "Identify exactly what needs to be researched, built, and validated. "
-            "Ensure the final deliverable fully satisfies the original goal — "
+            "Ensure the final deliverable fully satisfies the original goal - "
             "no more, no less. "
             "The crew includes: QA Sentinel (code execution validation), "
             "Security Reviewer (OWASP vulnerability audit), "

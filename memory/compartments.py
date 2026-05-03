@@ -1,14 +1,14 @@
 """
 memory/compartments.py
-MIRIX 6-compartment memory — extends ChromaDB persistent storage into structured compartments.
+MIRIX 6-compartment memory - extends ChromaDB persistent storage into structured compartments.
 
 Compartments:
-  core            — fundamental agent identity and standing instructions
-  episodic        — per-run events and task outcomes
-  semantic        — factual knowledge and research findings
-  procedural      — patterns, workflows, and how-to knowledge
-  resource        — file paths, URLs, and external references
-  knowledge_vault — curated high-value insights across runs
+  core            - fundamental agent identity and standing instructions
+  episodic        - per-run events and task outcomes
+  semantic        - factual knowledge and research findings
+  procedural      - patterns, workflows, and how-to knowledge
+  resource        - file paths, URLs, and external references
+  knowledge_vault - curated high-value insights across runs
 """
 from __future__ import annotations
 
@@ -101,7 +101,7 @@ class CompartmentStoreTool(BaseTool):
             )
         col = _get_compartment_collection(compartment, self.persist_dir)
         if col is None:
-            return "Memory disabled — chromadb not installed. Install with: pip install chromadb"
+            return "Memory disabled - chromadb not installed. Install with: pip install chromadb"
         entry_id = f"{_SESSION_ID}-{uuid.uuid4().hex[:8]}"
         col.add(
             documents=[content],

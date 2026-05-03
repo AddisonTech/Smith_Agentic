@@ -4,14 +4,14 @@ React-specialized crew for industrial HMI / dashboard development.
 
 Flow:
   0. [HITL] Plan approval
-  1. UIPlanner           — component tree, data flow, MUI theme tokens, API contracts
-  2. UIResearcher        — reads codebase, gathers MUI docs and API specs
-  3. UIBuilder           — writes complete React + MUI v5 components, dark industrial theme
-  4. UIReviewer          — reviews for correctness, industrial UX, accessibility, stack consistency
-  5. UIBuilder           — revises per review notes
-  6. QA Sentinel         — executes any runnable code artifacts
-  7. Security Reviewer   — audits for hardcoded credentials and injection risks
-  8. Deployment Validator — compile-checks all code artifacts
+  1. UIPlanner           - component tree, data flow, MUI theme tokens, API contracts
+  2. UIResearcher        - reads codebase, gathers MUI docs and API specs
+  3. UIBuilder           - writes complete React + MUI v5 components, dark industrial theme
+  4. UIReviewer          - reviews for correctness, industrial UX, accessibility, stack consistency
+  5. UIBuilder           - revises per review notes
+  6. QA Sentinel         - executes any runnable code artifacts
+  7. Security Reviewer   - audits for hardcoded credentials and injection risks
+  8. Deployment Validator - compile-checks all code artifacts
 """
 from __future__ import annotations
 

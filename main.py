@@ -1,5 +1,5 @@
 """
-main.py — SmithAgentic entrypoint.
+main.py - SmithAgentic entrypoint.
 
 Usage:
     python main.py --goal "Write a technical spec for a REST API rate limiter"
@@ -49,7 +49,7 @@ from crews.vision_crew import build_crew as build_vision_crew
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="SmithAgentic — multi-agent CrewAI system powered by local Ollama models.",
+        description="SmithAgentic - multi-agent CrewAI system powered by local Ollama models.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
@@ -157,7 +157,7 @@ def _banner(args: argparse.Namespace, cfg: dict) -> None:
     effective_model = cfg.get("_model_override") or get_crew_model(cfg, args.crew)
     target = get_target_repo(cfg)
     print(f"\n{sep}")
-    print("  SmithAgentic — Multi-Agent Crew")
+    print("  SmithAgentic - Multi-Agent Crew")
     print(sep)
     print(f"  Model  : {effective_model}")
     print(f"  Crew   : {args.crew}")
