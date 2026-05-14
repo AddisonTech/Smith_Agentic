@@ -1,7 +1,7 @@
 @echo off
 title SmithAgentic
 echo Starting SmithAgentic...
-cd /d C:\Users\asmith\Documents\Github\Smith_Agentic
+cd /d "%~dp0"
 
 echo Clearing port 8765...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8765 "') do (
@@ -9,8 +9,6 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8765 "') do (
 )
 timeout /t 1 /nobreak >nul
 
-set PYTHON=C:\Users\asmith\AppData\Local\anaconda3\python.exe
-
-start "SmithAgentic Server" cmd /k "%PYTHON%" ui\server.py
+start "SmithAgentic Server" cmd /k python ui\server.py
 timeout /t 4 /nobreak >nul
 start "" "http://localhost:8765"
