@@ -108,6 +108,8 @@ async def api_crew_defaults():
         "plc":     get_crew_model(cfg, "plc"),
         "react":   get_crew_model(cfg, "react"),
         "vision":  get_crew_model(cfg, "vision"),
+        "safety":  get_crew_model(cfg, "safety"),
+        "ops":     get_crew_model(cfg, "ops"),
     }
 
 
@@ -159,8 +161,10 @@ async def api_run(req: RunRequest):
             from crews.plc_crew import build_crew as plc_crew
             from crews.react_crew import build_crew as react_crew
             from crews.vision_crew import build_crew as vision_crew
+            from crews.safety_crew import build_crew as safety_crew
+            from crews.ops_crew import build_crew as ops_crew
 
-            builders = {"default": default_crew, "plc": plc_crew, "react": react_crew, "vision": vision_crew}
+            builders = {"default": default_crew, "plc": plc_crew, "react": react_crew, "vision": vision_crew, "safety": safety_crew, "ops": ops_crew}
             builder = builders.get(req.crew, default_crew)
 
             with redirect_stdout(_StreamCapture()):

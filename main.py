@@ -43,6 +43,8 @@ from crews.default_crew import build_crew as build_default_crew
 from crews.plc_crew import build_crew as build_plc_crew
 from crews.react_crew import build_crew as build_react_crew
 from crews.vision_crew import build_crew as build_vision_crew
+from crews.safety_crew import build_crew as build_safety_crew
+from crews.ops_crew import build_crew as build_ops_crew
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
@@ -59,6 +61,8 @@ examples:
   python main.py --goal "Build a Rockwell PLC program for a conveyor system" --crew plc
   python main.py --goal "Build a React dashboard for machine status" --crew react
   python main.py --goal "Run a Vision_Inspect defect analysis and report" --crew vision
+  python main.py --goal "Validate the deliverable in outputs/" --crew safety
+  python main.py --goal "Generate docs and telemetry for the last run" --crew ops
         """,
     )
     parser.add_argument(
@@ -81,7 +85,7 @@ examples:
         "--crew", "-c",
         default="default",
         metavar="CREW",
-        help="Which crew to run: 'default', 'plc', 'react', 'vision'. (default: default)",
+        help="Which crew to run: 'default', 'plc', 'react', 'vision', 'safety', 'ops'. (default: default)",
     )
     parser.add_argument(
         "--no-verbose",
@@ -115,6 +119,8 @@ _CREW_BUILDERS = {
     "plc":     build_plc_crew,
     "react":   build_react_crew,
     "vision":  build_vision_crew,
+    "safety":  build_safety_crew,
+    "ops":     build_ops_crew,
 }
 
 
