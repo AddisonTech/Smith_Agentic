@@ -21,12 +21,12 @@ All outputs are saved to `outputs/` as markdown or code files.
 | Researcher | Gathers information | Default | 7B |
 | Builder | Produces deliverables | Default | 7B-Coder |
 | Critic | Reviews output quality | Default | 7B |
-| QA Sentinel | Executes code, blocks on failures | All | 8B |
-| Security Reviewer | OWASP/vulnerability scanning | All | 7B |
-| Documentation Writer | Generates structured docs | Default | 8B |
-| Memory Manager | Consolidates run knowledge | Default | 8B |
-| Deployment Validator | Compile and deploy checks | All | 7B |
-| Observability Monitor | Run telemetry and audit | Default | 8B |
+| QA Sentinel | Executes code, blocks on failures | Safety | 8B |
+| Security Reviewer | OWASP/vulnerability scanning | Safety | 7B |
+| Deployment Validator | Compile and deploy checks | Safety | 7B |
+| Documentation Writer | Generates structured docs | Ops | 8B |
+| Memory Manager | Consolidates run knowledge | Ops | 8B |
+| Observability Monitor | Run telemetry and audit | Ops | 8B |
 | PLC Planner | PLC program structure | PLC | 8B |
 | PLC Developer | Ladder logic / AOI code | PLC | 8B |
 | PLC Safety Reviewer | NFPA/IEC safety compliance | PLC | 8B |
@@ -49,6 +49,22 @@ All outputs are saved to `outputs/` as markdown or code files.
 | `agents/researcher.py` | Researcher | General-purpose technical research and synthesis (shared across all crews) |
 | `agents/builder.py` | Builder | Produces deliverables for any domain |
 | `agents/critic.py` | Critic | Reviews deliverables against goal and plan |
+
+### Safety crew agents
+
+| File | Role | Specialization |
+|---|---|---|
+| `agents/qa_agent.py` | QA Sentinel | Executes code artifacts, blocks on crashes or import failures |
+| `agents/security_agent.py` | Security Reviewer | OWASP Top-10 audit, hardcoded credential detection, injection risk scanning |
+| `agents/deploy_agent.py` | Deployment Validator | py_compile checks, import chain validation, deploy readiness verdict |
+
+### Ops crew agents
+
+| File | Role | Specialization |
+|---|---|---|
+| `agents/docs_agent.py` | Documentation Writer | Generates structured README, API reference, and quickstart docs |
+| `agents/memory_agent.py` | Memory Manager | Distills run outputs into tagged ChromaDB memory entries |
+| `agents/observability_agent.py` | Observability Monitor | Reads all run outputs, reconstructs agent trace, produces telemetry report |
 
 ### PLC crew agents
 
@@ -83,7 +99,7 @@ All outputs are saved to `outputs/` as markdown or code files.
 | Feature | Details |
 |---|---|
 | **ChromaDB Memory** | Agents store and query insights across sessions via `memory/chroma/` |
-| **Reflexion Loop** | Default crew runs 2 critique/revise rounds before specialist pipeline |
+| **Reflexion Loop** | Default crew runs plan, research, build, and critique in sequence |
 | **Per-Agent Routing** | Each agent uses its optimal model tier (configured in `agent_models:`) |
 | **Human-in-the-loop** | Plan approval step before full crew runs (can skip with `--no-hitl`) |
 | **Code Executor** | Agents can run Python snippets and capture output |
@@ -146,6 +162,12 @@ python main.py --goal "Build a React dashboard for machine OEE metrics" --crew r
 
 # Vision inspection crew (requires Vision_Inspect running on port 8000)
 python main.py --goal "Run a defect analysis on today's inspection batch" --crew vision
+
+# Safety crew - validates deliverable in outputs/ for code quality, security, and deploy readiness
+python main.py --goal "Validate the deliverable in outputs/" --crew safety
+
+# Ops crew - generates docs, consolidates memory, and produces telemetry for the last run
+python main.py --goal "Generate docs and telemetry for the last run" --crew ops
 
 # Override model
 python main.py --goal "..." --model qwen2.5:14b
@@ -240,6 +262,8 @@ Per-crew defaults (set in `crew_models:`) and per-agent routing (set in `agent_m
 | Crew | Default model | Why |
 |---|---|---|
 | **default** | `qwen2.5:7b` (plan/research) + `qwen2.5-coder:7b` (build) | Balanced reasoning + specialized coder for generation |
+| **safety** | `llama3.1:8b` | Fast and reliable for code execution, audit, and validation tasks |
+| **ops** | `llama3.1:8b` | Strong instruction following for documentation and memory consolidation |
 | **plc** | `qwen2.5:7b` | Strong instruction following for safety-critical PLC work |
 | **react** | `qwen2.5-coder:7b` | Purpose-built for code generation - React/JS/TS |
 | **vision** | `qwen2.5:7b` | Solid reasoning for defect analysis and report generation |
@@ -340,6 +364,8 @@ crew_models:
   plc:     qwen2.5:7b
   react:   qwen2.5-coder:7b
   vision:  qwen2.5:7b
+  safety:  llama3.1:8b
+  ops:     llama3.1:8b
 
 agent_models:                # per-agent routing
   orchestrator:        qwen2.5:7b
@@ -380,6 +406,12 @@ smith_agentic/
 │   ├── researcher.py           # shared: general-purpose research (all crews)
 │   ├── builder.py              # default: generic deliverable builder
 │   ├── critic.py               # default: generic reviewer
+│   ├── qa_agent.py             # safety: code execution and QA validation
+│   ├── security_agent.py       # safety: OWASP Top-10 vulnerability audit
+│   ├── deploy_agent.py         # safety: compile checks and deploy readiness
+│   ├── docs_agent.py           # ops: structured markdown documentation
+│   ├── memory_agent.py         # ops: ChromaDB knowledge consolidation
+│   ├── observability_agent.py  # ops: run telemetry and audit trail
 │   ├── plc_planner.py          # plc: ControlLogix architecture + plc_generator/ awareness
 │   ├── plc_developer.py        # plc: ladder logic, ST, AOI/UDT, L5X authoring
 │   ├── plc_safety_reviewer.py  # plc: NFPA 79, ISO 13849, fault/interlock review
@@ -404,6 +436,8 @@ smith_agentic/
 │   └── vision_tasks.py
 ├── crews/
 │   ├── default_crew.py         # 4-agent crew: plan, research, build, critique
+│   ├── safety_crew.py          # QA, security, and deployment validation crew
+│   ├── ops_crew.py             # documentation, memory, and observability crew
 │   ├── plc_crew.py             # Rockwell Logix / ladder logic crew
 │   ├── react_crew.py           # industrial React / MUI crew
 │   ├── vision_crew.py          # Vision_Inspect integration crew

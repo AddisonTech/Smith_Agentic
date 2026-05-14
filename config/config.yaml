@@ -14,6 +14,8 @@ llm:
 # Any tag from `ollama list` works.
 crew_models:
   default: qwen2.5-coder:7b
+  safety:  llama3.1:8b
+  ops:     llama3.1:8b
   plc:     qwen2.5:7b
   react:   qwen2.5-coder:7b
   vision:  qwen2.5:7b
