@@ -17,22 +17,22 @@ All outputs are saved to `outputs/` as markdown or code files.
 
 | Agent | Role | Crew | Model Tier |
 |---|---|---|---|
-| Orchestrator | Plans and decomposes goals | Default | 32B |
-| Researcher | Gathers information | Default | 32B |
-| Builder | Produces deliverables | Default | 14B-Coder |
-| Critic | Reviews output quality | Default | 14B |
+| Orchestrator | Plans and decomposes goals | Default | 7B |
+| Researcher | Gathers information | Default | 7B |
+| Builder | Produces deliverables | Default | 7B-Coder |
+| Critic | Reviews output quality | Default | 7B |
 | QA Sentinel | Executes code, blocks on failures | All | 8B |
-| Security Reviewer | OWASP/vulnerability scanning | All | 14B |
+| Security Reviewer | OWASP/vulnerability scanning | All | 7B |
 | Documentation Writer | Generates structured docs | Default | 8B |
 | Memory Manager | Consolidates run knowledge | Default | 8B |
-| Deployment Validator | Compile and deploy checks | All | 14B |
+| Deployment Validator | Compile and deploy checks | All | 7B |
 | Observability Monitor | Run telemetry and audit | Default | 8B |
-| PLC Planner | PLC program structure | PLC | 14B |
-| PLC Developer | Ladder logic / AOI code | PLC | 14B-Coder |
-| PLC Safety Reviewer | NFPA/IEC safety compliance | PLC | 14B |
-| UI Planner | React component design | React | 14B |
-| UI Builder | React/MUI component code | React | 14B-Coder |
-| UI Reviewer | React code quality review | React | 14B |
+| PLC Planner | PLC program structure | PLC | 8B |
+| PLC Developer | Ladder logic / AOI code | PLC | 8B |
+| PLC Safety Reviewer | NFPA/IEC safety compliance | PLC | 8B |
+| UI Planner | React component design | React | 8B |
+| UI Builder | React/MUI component code | React | 8B |
+| UI Reviewer | React code quality review | React | 8B |
 | Vision Analyst | Queries Vision_Inspect API, parses defect results | Vision | 7B |
 | Vision Reporter | Synthesizes findings into structured reports | Vision | 8B |
 | Vision QA Validator | Health-checks pipeline, audits reports, detects anomalies | Vision | 8B |
@@ -239,16 +239,16 @@ Per-crew defaults (set in `crew_models:`) and per-agent routing (set in `agent_m
 
 | Crew | Default model | Why |
 |---|---|---|
-| **default** | `qwen2.5:32b` (plan/research) + `qwen2.5-coder:14b` (build) | Full reasoning for planning; specialized coder for generation |
-| **plc** | `qwen2.5:14b` | Strong reasoning + tool calling for safety-critical PLC work |
-| **react** | `qwen2.5-coder:14b` | Purpose-built for code generation - React/JS/TS |
+| **default** | `qwen2.5:7b` (plan/research) + `qwen2.5-coder:7b` (build) | Balanced reasoning + specialized coder for generation |
+| **plc** | `qwen2.5:7b` | Strong instruction following for safety-critical PLC work |
+| **react** | `qwen2.5-coder:7b` | Purpose-built for code generation - React/JS/TS |
+| **vision** | `qwen2.5:7b` | Solid reasoning for defect analysis and report generation |
 
 **Pull the recommended models:**
 
 ```bash
-ollama pull qwen2.5:32b          # planning and research
-ollama pull qwen2.5:14b          # review and PLC crew
-ollama pull qwen2.5-coder:14b    # code generation
+ollama pull qwen2.5:7b           # planning, research, review
+ollama pull qwen2.5-coder:7b     # code generation
 ollama pull llama3.1:8b          # fast specialist agents (QA, Docs, Memory, Observability)
 ```
 
@@ -336,15 +336,16 @@ llm:
   timeout: 600                # 14B models need more time
 
 crew_models:
-  default: qwen2.5:32b       # per-crew model assignments
-  plc:     qwen2.5:14b
-  react:   qwen2.5-coder:14b
+  default: qwen2.5:7b        # per-crew model assignments
+  plc:     qwen2.5:7b
+  react:   qwen2.5-coder:7b
+  vision:  qwen2.5:7b
 
 agent_models:                # per-agent routing
-  orchestrator:        qwen2.5:32b
-  builder:             qwen2.5-coder:14b
+  orchestrator:        qwen2.5:7b
+  builder:             qwen2.5-coder:7b
   qa_agent:            llama3.1:8b
-  security_agent:      qwen2.5:14b
+  security_agent:      qwen2.5:7b
 
 llm_fallback:
   model: llama3.1:8b         # used if crew not in crew_models
@@ -393,9 +394,16 @@ smith_agentic/
 │   ├── research.py
 │   ├── build.py
 │   ├── critique.py
-│   └── revise.py
+│   ├── revise.py
+│   ├── qa_task.py
+│   ├── security_task.py
+│   ├── deploy_task.py
+│   ├── docs_task.py
+│   ├── memory_task.py
+│   ├── observability_task.py
+│   └── vision_tasks.py
 ├── crews/
-│   ├── default_crew.py         # general-purpose 5-agent crew
+│   ├── default_crew.py         # general-purpose 10-agent crew with Reflexion loop
 │   ├── plc_crew.py             # Rockwell Logix / ladder logic crew
 │   ├── react_crew.py           # industrial React / MUI crew
 │   ├── vision_crew.py          # Vision_Inspect integration crew
@@ -403,9 +411,12 @@ smith_agentic/
 ├── tools/
 │   ├── file_tools.py           # FileReadTool, FileWriteTool, FileListTool
 │   ├── search_tool.py          # WebSearchTool (DuckDuckGo)
+│   ├── web_fetch_tool.py       # WebFetchTool (raw URL fetch + HTML extraction)
 │   ├── code_executor.py        # CodeExecutorTool (subprocess Python runner)
 │   ├── git_tool.py             # GitStatusTool, GitStageTool, GitCommitTool, GitPushTool
-│   └── codebase_reader.py      # CodebaseReadTool, CodebaseListTool, CodebaseGlobTool
+│   ├── codebase_reader.py      # CodebaseReadTool, CodebaseListTool, CodebaseGlobTool
+│   ├── vision_inspect_tool.py  # VisionInspectAPITool + Vision_Inspect file I/O tools
+│   └── project_file_tool.py    # ProjectFileReadTool (reads files listed in agent context)
 ├── memory/
 │   ├── memory_store.py         # MemoryStoreTool, MemoryQueryTool (ChromaDB)
 │   └── chroma/                 # ChromaDB persistent storage (auto-created)
@@ -423,6 +434,30 @@ smith_agentic/
 1. Create `crews/my_crew.py` with a `build_crew(goal, config)` function returning a `crewai.Crew`.
 2. Add the crew name to `_CREW_BUILDERS` in `main.py`.
 3. Run with: `python main.py --goal "..." --crew my_crew`
+
+---
+
+## Adding a new agent
+
+```python
+# agents/my_agent.py
+from crewai import Agent, LLM
+
+def create_my_agent(llm: LLM, tools: list, verbose: bool = True) -> Agent:
+    return Agent(
+        role="My Agent Role",
+        goal="What this agent is trying to accomplish.",
+        backstory="Domain expertise and constraints for this agent.",
+        llm=llm,
+        tools=tools,
+        verbose=verbose,
+    )
+```
+
+1. Create `agents/my_agent.py` with a `create_my_agent(llm, tools, verbose)` function.
+2. Create the corresponding task in `tasks/my_task.py`.
+3. Import and wire the agent into the relevant crew file (`crews/default_crew.py` or a new crew).
+4. Optionally add a per-agent model entry under `agent_models:` in `config/config.yaml`.
 
 ---
 
