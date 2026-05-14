@@ -112,6 +112,9 @@ All outputs are saved to `outputs/` as markdown or code files.
 | **PLC Crew** | Domain-tuned agents for Rockwell Logix / ladder logic / AOI development |
 | **React Crew** | Domain-tuned agents for industrial React/MUI HMI development |
 | **Vision Crew** | Connects to Vision_Inspect backend; runs defect analysis, report generation, and pipeline QA |
+| **Safety Crew** | Standalone QA, security, and deploy validation pipeline for any deliverable |
+| **Ops Crew** | Standalone documentation, memory consolidation, and telemetry pipeline |
+| **Chain Flag** | `--chain` runs safety then ops automatically after any primary crew finishes |
 | **Web UI** | FastAPI + React CDN frontend with live WebSocket output streaming |
 
 ---
@@ -131,8 +134,8 @@ All outputs are saved to `outputs/` as markdown or code files.
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/AddisonTech/smith_agentic.git
-cd smith_agentic
+git clone https://github.com/AddisonTech/Smith_Agentic.git
+cd Smith_Agentic
 
 # 2. (Recommended) Create a virtual environment
 python -m venv .venv
@@ -243,6 +246,8 @@ memory:
 
 ## Output Files
 
+**Default crew**
+
 | File | Contents |
 |---|---|
 | `research.md` | Researcher's findings |
@@ -250,6 +255,22 @@ memory:
 | `critique.md` | Reviewer's notes (APPROVED / NEEDS REVISION) |
 | `deliverable_revised.md` | Builder's revised deliverable |
 | `revision_summary.md` | What changed and why |
+
+**Safety crew**
+
+| File | Contents |
+|---|---|
+| `qa_report.md` | QA Sentinel verdict (SENTINEL_PASS / SENTINEL_BLOCK), exit code, errors |
+| `security_report.md` | Security Reviewer findings by category and severity |
+| `deploy_report.md` | Deployment Validator verdict (DEPLOY_READY / DEPLOY_BLOCKED) with numbered issues |
+
+**Ops crew**
+
+| File | Contents |
+|---|---|
+| `docs/deliverable_docs.md` | Documentation Writer output: overview, setup, usage, API reference, examples |
+| `memory_summary.md` | Memory Manager report listing what was stored to ChromaDB |
+| `telemetry_report.md` | Observability Monitor trace: agents run, files produced, verdicts, recommendations |
 
 ---
 
@@ -467,7 +488,9 @@ smith_agentic/
 
 1. Create `crews/my_crew.py` with a `build_crew(goal, config)` function returning a `crewai.Crew`.
 2. Add the crew name to `_CREW_BUILDERS` in `main.py`.
-3. Run with: `python main.py --goal "..." --crew my_crew`
+3. Add the crew name to the `builders` dict in `ui/server.py` and to the `api_crew_defaults` return value.
+4. Add a default model entry under `crew_models:` in `config/config.yaml`.
+5. Run with: `python main.py --goal "..." --crew my_crew`
 
 ---
 
