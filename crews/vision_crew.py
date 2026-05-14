@@ -13,14 +13,7 @@ Flow:
 """
 from __future__ import annotations
 
-import json
-from pathlib import Path
-from typing import Type
-
-import httpx
 from crewai import Crew, LLM, Process
-from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
 
 from agents.vision_analyst import create_vision_analyst
 from agents.vision_reporter import create_vision_reporter
@@ -33,75 +26,9 @@ from tasks.vision_tasks import (
 )
 
 from tools.file_tools import FileReadTool, FileWriteTool, FileListTool
+from tools.vision_inspect_tool import VisionInspectAPITool
 from memory.memory_store import create_memory_tools
 from config.loader import get_crew_model, get_agent_model
-
-
-# ── Vision Inspect API Tool ───────────────────────────────────────────────────
-
-class _APIInput(BaseModel):
-    method: str = Field(
-        default="GET",
-        description="HTTP method: GET or POST.",
-    )
-    path: str = Field(
-        description=(
-            "API path relative to the Vision_Inspect base URL. "
-            "Examples: '/health', '/inspections', '/inspections/latest', "
-            "'/models', '/reports'. Do NOT include the host."
-        )
-    )
-    payload: str = Field(
-        default="",
-        description=(
-            "JSON body as a string for POST requests. Leave empty for GET. "
-            "Example: '{\"limit\": 50}'"
-        ),
-    )
-
-
-class VisionInspectAPITool(BaseTool):
-    """Calls the Vision_Inspect FastAPI backend at http://localhost:8000."""
-
-    name: str = "Call Vision Inspect API"
-    description: str = (
-        "Call the Vision_Inspect REST API. Use for: health checks (/health), "
-        "fetching inspection results (/inspections, /inspections/latest), "
-        "listing loaded models (/models), and retrieving reports (/reports). "
-        "Specify 'method' (GET/POST), 'path' (relative, e.g. '/health'), "
-        "and optional 'payload' (JSON string for POST bodies). "
-        "Returns the JSON response as a formatted string."
-    )
-    args_schema: Type[BaseModel] = _APIInput
-
-    base_url: str = "http://localhost:8000"
-    timeout: float = 30.0
-
-    def _run(self, method: str = "GET", path: str = "/health", payload: str = "") -> str:
-        url = self.base_url.rstrip("/") + "/" + path.lstrip("/")
-        try:
-            with httpx.Client(timeout=self.timeout) as client:
-                if method.upper() == "POST":
-                    body = json.loads(payload) if payload.strip() else {}
-                    resp = client.post(url, json=body)
-                else:
-                    resp = client.get(url)
-            resp.raise_for_status()
-            try:
-                data = resp.json()
-                return json.dumps(data, indent=2)
-            except Exception:
-                return resp.text
-        except httpx.ConnectError:
-            return (
-                f"Error: Cannot connect to Vision_Inspect at {self.base_url}. "
-                "Ensure 'uvicorn backend.main:app --port 8000' is running in "
-                "the Vision_Inspect directory."
-            )
-        except httpx.HTTPStatusError as exc:
-            return f"Error: HTTP {exc.response.status_code} - {exc.response.text}"
-        except Exception as exc:  # noqa: BLE001
-            return f"Error: {type(exc).__name__}: {exc}"
 
 
 # ── Crew builder ──────────────────────────────────────────────────────────────
