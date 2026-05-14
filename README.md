@@ -403,7 +403,7 @@ smith_agentic/
 │   ├── observability_task.py
 │   └── vision_tasks.py
 ├── crews/
-│   ├── default_crew.py         # general-purpose 10-agent crew with Reflexion loop
+│   ├── default_crew.py         # 4-agent crew: plan, research, build, critique
 │   ├── plc_crew.py             # Rockwell Logix / ladder logic crew
 │   ├── react_crew.py           # industrial React / MUI crew
 │   ├── vision_crew.py          # Vision_Inspect integration crew
