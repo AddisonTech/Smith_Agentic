@@ -38,7 +38,44 @@ def test_status_ollama_false_when_not_running():
     assert isinstance(data["ollama"], bool)
 
 
-# ── /api/outputs/{filename} — path traversal ─────────────────────────────────
+# ── /api/outputs — list ───────────────────────────────────────────────────────
+
+def test_list_outputs_returns_files_key():
+    response = client.get("/api/outputs")
+    assert response.status_code == 200
+    assert "files" in response.json()
+
+def test_list_outputs_files_is_list():
+    response = client.get("/api/outputs")
+    assert isinstance(response.json()["files"], list)
+
+def test_list_outputs_file_entries_have_path_and_size(tmp_path, monkeypatch):
+    import ui.server as srv
+    (tmp_path / "deliverable.md").write_text("hello")
+    monkeypatch.setattr(srv, "_UNIT_DIR", tmp_path)
+    (tmp_path / "outputs").mkdir()
+    (tmp_path / "outputs" / "deliverable.md").write_text("hello")
+    response = client.get("/api/outputs")
+    assert response.status_code == 200
+    files = response.json()["files"]
+    assert len(files) == 1
+    assert "path" in files[0]
+    assert "size" in files[0]
+
+def test_list_outputs_includes_subdirectory_files(tmp_path, monkeypatch):
+    import ui.server as srv
+    monkeypatch.setattr(srv, "_UNIT_DIR", tmp_path)
+    outputs = tmp_path / "outputs"
+    outputs.mkdir()
+    (outputs / "deliverable.md").write_text("top level")
+    (outputs / "docs").mkdir()
+    (outputs / "docs" / "deliverable_docs.md").write_text("nested")
+    response = client.get("/api/outputs")
+    paths = [f["path"] for f in response.json()["files"]]
+    assert any("docs" in p for p in paths)
+
+
+# ── /api/outputs/{filename} — path traversal and download ────────────────────
 
 def test_output_path_traversal_returns_403_or_404():
     response = client.get("/api/outputs/..%2Frequirements.txt")
@@ -47,6 +84,27 @@ def test_output_path_traversal_returns_403_or_404():
 def test_output_missing_file_returns_404():
     response = client.get("/api/outputs/definitely_not_there.txt")
     assert response.status_code == 404
+
+
+# ── /api/run — crew validation ────────────────────────────────────────────────
+
+def test_run_unknown_crew_returns_400():
+    response = client.post("/api/run", json={"goal": "test", "crew": "nonexistent_crew"})
+    assert response.status_code == 400
+    assert "nonexistent_crew" in response.json()["error"]
+
+def test_run_unknown_crew_error_lists_valid_crews():
+    response = client.post("/api/run", json={"goal": "test", "crew": "bad"})
+    assert response.status_code == 400
+    error = response.json()["error"]
+    assert "default" in error
+
+def test_run_valid_crew_starts_without_error():
+    # Just checks that a valid crew name doesn't produce an immediate validation error.
+    # We don't wait for the full run - just verify it starts as 'starting' or 'running'.
+    response = client.post("/api/run", json={"goal": "test goal", "crew": "default"})
+    assert response.status_code == 200
+    assert "run_id" in response.json()
 
 
 # ── /api/run/{run_id} — unknown run ───────────────────────────────────────────

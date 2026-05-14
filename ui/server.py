@@ -118,9 +118,18 @@ async def api_crew_defaults():
     }
 
 
+_VALID_CREWS = {"default", "plc", "react", "vision", "safety", "ops"}
+
+
 @app.post("/api/run")
 async def api_run(req: RunRequest):
     """Start a crew run. Returns run_id immediately; output streams via WebSocket."""
+    if req.crew not in _VALID_CREWS:
+        return JSONResponse(
+            {"error": f"Unknown crew '{req.crew}'. Valid: {', '.join(sorted(_VALID_CREWS))}"},
+            status_code=400,
+        )
+
     run_id = str(uuid.uuid4())[:8]
     queue: asyncio.Queue = asyncio.Queue()
 
@@ -173,10 +182,6 @@ async def api_run(req: RunRequest):
                 "default": default_crew, "plc": plc_crew, "react": react_crew,
                 "vision": vision_crew, "safety": safety_crew, "ops": ops_crew,
             }
-            if req.crew not in builders:
-                _runs[run_id]["status"] = "error"
-                _push(f"[ERROR] Unknown crew '{req.crew}'. Valid: {', '.join(builders)}")
-                return
             builder = builders[req.crew]
 
             with redirect_stdout(_StreamCapture()):

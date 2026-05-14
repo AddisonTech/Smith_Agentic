@@ -175,6 +175,9 @@ python main.py --goal "Generate docs and telemetry for the last run" --crew ops
 # Override model
 python main.py --goal "..." --model qwen2.5:14b
 
+# Run safety and ops crews automatically after the primary crew finishes
+python main.py --goal "Write a Python rate limiter with tests" --chain
+
 # Skip human-in-the-loop plan approval
 python main.py --goal "..." --no-hitl
 
@@ -390,9 +393,18 @@ crew_models:
 
 agent_models:                # per-agent routing
   orchestrator:        qwen2.5:7b
+  researcher:          qwen2.5:7b
   builder:             qwen2.5-coder:7b
+  critic:              qwen2.5:7b
   qa_agent:            llama3.1:8b
   security_agent:      qwen2.5:7b
+  deploy_agent:        qwen2.5:7b
+  docs_agent:          llama3.1:8b
+  memory_agent:        llama3.1:8b
+  observability_agent: llama3.1:8b
+  vision_analyst:      qwen2.5:7b
+  vision_reporter:     llama3.1:8b
+  vision_qa:           llama3.1:8b
 
 llm_fallback:
   model: llama3.1:8b         # used if crew not in crew_models
@@ -470,6 +482,7 @@ smith_agentic/
 │   ├── code_executor.py        # CodeExecutorTool (subprocess Python runner)
 │   ├── git_tool.py             # GitStatusTool, GitStageTool, GitCommitTool, GitPushTool
 │   ├── codebase_reader.py      # CodebaseReadTool, CodebaseListTool, CodebaseGlobTool
+│   ├── target_repo_tools.py    # read/write/list/glob tools scoped to an external repo
 │   ├── vision_inspect_tool.py  # VisionInspectAPITool + Vision_Inspect file I/O tools
 │   └── project_file_tool.py    # ProjectFileReadTool (reads files listed in agent context)
 ├── memory/
@@ -478,6 +491,14 @@ smith_agentic/
 ├── ui/
 │   ├── server.py               # FastAPI + WebSocket backend (port 8765)
 │   └── index.html              # React CDN frontend
+├── tests/
+│   ├── conftest.py             # sys.path setup for all tests
+│   ├── test_config.py          # config loader: crew models, agent models, target repo
+│   ├── test_file_tools.py      # FileReadTool, FileWriteTool, FileListTool
+│   ├── test_codebase_reader.py # CodebaseReadTool, CodebaseListTool, CodebaseGlobTool
+│   ├── test_vision_inspect.py  # VisionInspectAPITool + file I/O tools
+│   ├── test_memory.py          # MemoryStoreTool, MemoryQueryTool, create_memory_tools
+│   └── test_server.py          # FastAPI endpoints: status, outputs, run, crew validation
 └── outputs/                    # all agent outputs land here
     └── .gitkeep
 ```
