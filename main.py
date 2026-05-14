@@ -100,6 +100,12 @@ examples:
         help="Skip human-in-the-loop plan approval. Run fully autonomously.",
     )
     parser.add_argument(
+        "--chain",
+        action="store_true",
+        default=False,
+        help="After the primary crew finishes, automatically run the safety and ops crews.",
+    )
+    parser.add_argument(
         "--target-repo", "-t",
         default=None,
         metavar="PATH",
@@ -157,16 +163,27 @@ def main() -> None:
     print("  Check outputs/ for all saved files.")
     print(f"{'='*60}\n")
 
+    if args.chain and args.crew not in ("safety", "ops"):
+        for chain_crew in ("safety", "ops"):
+            print(f"\n{'='*60}")
+            print(f"  CHAIN: {chain_crew} crew")
+            print(f"{'='*60}\n")
+            _CREW_BUILDERS[chain_crew](goal=args.goal, config=cfg).kickoff()
+        print(f"\n{'='*60}")
+        print("  CHAIN complete.")
+        print(f"{'='*60}\n")
+
 
 def _banner(args: argparse.Namespace, cfg: dict) -> None:
     sep = "=" * 60
     effective_model = cfg.get("_model_override") or get_crew_model(cfg, args.crew)
     target = get_target_repo(cfg)
+    chain_info = " -> safety -> ops" if getattr(args, "chain", False) and args.crew not in ("safety", "ops") else ""
     print(f"\n{sep}")
     print("  SmithAgentic - Multi-Agent Crew")
     print(sep)
     print(f"  Model  : {effective_model}")
-    print(f"  Crew   : {args.crew}")
+    print(f"  Crew   : {args.crew}{chain_info}")
     print(f"  Verbose: {cfg['crew'].get('verbose', True)}")
     print(f"  HITL   : {cfg['crew'].get('hitl', True)}")
     if target:

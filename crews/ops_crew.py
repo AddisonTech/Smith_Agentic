@@ -24,7 +24,6 @@ from tasks.observability_task import create_observability_task
 
 from tools.file_tools import FileReadTool, FileWriteTool, FileListTool
 from memory.memory_store import create_memory_tools
-from crews.hitl import approve_plan
 from config.loader import get_crew_model, get_agent_model
 
 
@@ -55,12 +54,10 @@ def build_crew(goal: str, config: dict) -> Crew:
     mem_agent  = create_memory_agent(llm=llm_mem,  tools=[file_read, file_list, file_write, mem_store, mem_query], verbose=verbose)
     obs_agent  = create_observability_agent(llm=llm_obs,  tools=[file_read, file_list, file_write, mem_query], verbose=verbose)
 
-    # ── HITL + Tasks ──────────────────────────────────────────────────────────
-    approved_goal = approve_plan(goal, docs_agent, llm_docs, config)
-
-    docs_task          = create_docs_task(docs_agent, approved_goal)
-    memory_task        = create_memory_task(mem_agent, approved_goal, context=[docs_task])
-    observability_task = create_observability_task(obs_agent, approved_goal, context=[docs_task, memory_task])
+    # ── Tasks (no HITL - ops crew processes existing outputs) ────────────────
+    docs_task          = create_docs_task(docs_agent, goal)
+    memory_task        = create_memory_task(mem_agent, goal, context=[docs_task])
+    observability_task = create_observability_task(obs_agent, goal, context=[docs_task, memory_task])
 
     process = (
         Process.sequential

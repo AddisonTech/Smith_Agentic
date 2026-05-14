@@ -60,6 +60,7 @@ class RunRequest(BaseModel):
     crew: str = "default"
     model: str | None = None
     hitl: bool = False  # HITL disabled in UI mode (approval is in the UI)
+    chain: bool = False  # if True, run safety then ops after the primary crew
 
 
 # ── Static files (index.html) ─────────────────────────────────────────────────
@@ -175,6 +176,15 @@ async def api_run(req: RunRequest):
             _push("FINAL OUTPUT")
             _push(f"{'='*50}")
             _push(str(result))
+
+            if req.chain and req.crew not in ("safety", "ops"):
+                for chain_name in ("safety", "ops"):
+                    _push(f"\n[SmithAgentic] Chain: starting {chain_name} crew...")
+                    with redirect_stdout(_StreamCapture()):
+                        chain_crew = builders.get(chain_name)
+                        if chain_crew:
+                            chain_crew(goal=req.goal, config=cfg).kickoff()
+                _push("[SmithAgentic] Chain complete.")
 
             # Collect output files
             outputs_dir = _UNIT_DIR / "outputs"
