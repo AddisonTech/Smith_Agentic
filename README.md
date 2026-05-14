@@ -323,6 +323,68 @@ ollama pull mistral:7b           # fast, instruction-tuned
 
 ---
 
+## MCP Server
+
+The MCP server exposes SmithAgentic as a set of tools for **Claude Code** and **Claude Desktop** via the Model Context Protocol. Once connected, Claude can start crew runs, poll for progress, and read output files directly - no terminal required.
+
+### Install the MCP dependency
+
+```bash
+pip install "mcp>=1.0.0,<2.0.0"
+```
+
+### Claude Code setup
+
+```bash
+claude mcp add smith_agentic python C:/Users/yourname/Documents/GitHub/Smith_Agentic/mcp_server.py
+```
+
+Verify it loaded:
+```
+/mcp
+```
+
+### Claude Desktop setup
+
+Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+
+```json
+{
+  "mcpServers": {
+    "smith_agentic": {
+      "command": "python",
+      "args": ["C:/Users/yourname/Documents/GitHub/Smith_Agentic/mcp_server.py"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving.
+
+### Available tools
+
+| Tool | What it does |
+|---|---|
+| `check_ollama` | Verify Ollama is running and reachable |
+| `list_crews` | Show available crews and descriptions |
+| `list_models` | Show installed Ollama models |
+| `run_crew(goal, crew, model, chain)` | Start a crew run in the background, returns run_id |
+| `get_run_status(run_id)` | Poll a run for status and recent output |
+| `list_output_files` | List files in outputs/ |
+| `read_output_file(filename)` | Read a specific file from outputs/ |
+
+### Example usage
+
+Once connected, you can ask Claude:
+
+> "Check if Ollama is running, then start a default crew run with the goal: write a Python rate limiter class with tests."
+
+Claude will call `check_ollama`, then `run_crew`, then poll `get_run_status` until complete, then `read_output_file` to show you the result.
+
+Crew runs take several minutes. `get_run_status` returns the last 20 lines of agent output so you can see what's happening.
+
+---
+
 ## Vision Crew
 
 The Vision Crew integrates with the **Vision_Inspect** backend to run automated inspection analysis entirely within the agent pipeline.
@@ -417,6 +479,7 @@ memory:
 ```
 smith_agentic/
 ├── main.py                     # CLI entrypoint
+├── mcp_server.py               # MCP server (Claude Code / Claude Desktop integration)
 ├── requirements.txt
 ├── README.md
 ├── config/
