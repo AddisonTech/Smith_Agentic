@@ -14,7 +14,7 @@ env/
 # ChromaDB storage
 memory/chroma/
 
-# Run outputs (keep the directory via .gitkeep, ignore the contents)
+# Agent run outputs (keep only .gitkeep placeholder)
 outputs/*
 !outputs/.gitkeep
 
