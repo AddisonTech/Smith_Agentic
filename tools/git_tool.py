@@ -14,8 +14,8 @@ from typing import Type
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-# Default repo: three levels up from this file (smith_agentic/tools/ → repo root)
-_DEFAULT_REPO = Path(__file__).resolve().parent.parent.parent
+# Default repo: project root (smith_agentic/tools/ → smith_agentic/)
+_DEFAULT_REPO = Path(__file__).resolve().parent.parent
 
 
 class _StatusInput(BaseModel):

@@ -15,8 +15,8 @@ from typing import Type
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-# Repo root = three levels up from this file (smith_agentic/tools/ → repo root)
-_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+# Repo root = project root (smith_agentic/tools/ → smith_agentic/)
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 _MAX_FILE_CHARS = 20_000  # cap large files to avoid flooding agent context
 
 
@@ -24,7 +24,7 @@ class _ReadInput(BaseModel):
     path: str = Field(
         description=(
             "Path to the file to read, relative to the repo root. "
-            "Example: '00_Rockwell-Logix/04_AI_Sandbox/smith_agentic/main.py'"
+            "Example: 'main.py', 'crews/default_crew.py', 'tools/git_tool.py'"
         )
     )
 
