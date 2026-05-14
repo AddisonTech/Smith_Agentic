@@ -83,9 +83,6 @@ All outputs are saved to `outputs/` as markdown or code files.
 | Feature | Details |
 |---|---|
 | **ChromaDB Memory** | Agents store and query insights across sessions via `memory/chroma/` |
-| **MIRIX Compartments** | 6-compartment memory (core/episodic/semantic/procedural/resource/knowledge_vault) |
-| **Task Checkpointing** | Each task saves state to `outputs/checkpoints/` - resume on failure |
-| **Shared Scratchpad** | All agents in a crew read/write a shared blackboard (LbMAS pattern) |
 | **Reflexion Loop** | Default crew runs 2 critique/revise rounds before specialist pipeline |
 | **Per-Agent Routing** | Each agent uses its optimal model tier (configured in `agent_models:`) |
 | **Human-in-the-loop** | Plan approval step before full crew runs (can skip with `--no-hitl`) |
