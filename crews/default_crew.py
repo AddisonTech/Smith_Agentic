@@ -127,7 +127,7 @@ def build_crew(goal: str, config: dict) -> Crew:
     critique_task  = create_critique_task(critic, approved_goal, context=[plan_task, build_task])
     revise_task    = create_revise_task(builder, approved_goal, context=[plan_task, build_task, critique_task])
     critique_task2 = create_critique_task(critic, approved_goal, context=[plan_task, revise_task])
-    revise_task2   = create_revise_task(builder, approved_goal, context=[plan_task, build_task, critique_task2])
+    revise_task2   = create_revise_task(builder, approved_goal, context=[plan_task, revise_task, critique_task2])
 
     # ── Tasks - Specialist Pipeline ────────────────────────────────────────────
     qa_task      = create_qa_task(qa_agent, approved_goal, context=[plan_task, revise_task2])
