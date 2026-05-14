@@ -38,6 +38,7 @@ _ANSI_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -52,6 +53,13 @@ from config.loader import load_config
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(title="SmithAgentic", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:4173", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ── Run registry ──────────────────────────────────────────────────────────────
 # run_id → {"status": str, "queue": asyncio.Queue, "output": list[str], "files": list[str]}
