@@ -89,13 +89,17 @@ class CodebaseListTool(BaseTool):
             return f"Error: '{path}' not found."
         if not target.is_dir():
             return f"Error: '{path}' is a file, not a directory."
-        entries = sorted(target.iterdir(), key=lambda p: (p.is_file(), p.name))
+        _SKIP = {"__pycache__", ".git", "node_modules", ".next", ".venv", "venv"}
+        entries = sorted(
+            (e for e in target.iterdir() if e.name not in _SKIP),
+            key=lambda p: (p.is_file(), p.name),
+        )
         lines = []
         for entry in entries[:100]:
             rel = entry.relative_to(_REPO_ROOT)
             prefix = "  " if entry.is_file() else "D "
             lines.append(f"{prefix}{rel}")
-        if len(list(target.iterdir())) > 100:
+        if len(entries) > 100:
             lines.append("... (truncated at 100 entries)")
         return "\n".join(lines) if lines else "Empty directory."
 
