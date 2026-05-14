@@ -8,11 +8,15 @@ Launch:
     # open http://localhost:8765
 
 Endpoints:
-    GET  /           - serves index.html
-    GET  /api/status - health check + Ollama availability
-    GET  /api/models - lists available Ollama models
-    POST /api/run    - starts a crew run; returns run_id
-    WS   /ws/{run_id} - streams live agent output for a run
+    GET  /                       - serves index.html
+    GET  /api/status             - health check + Ollama availability
+    GET  /api/models             - lists available Ollama models
+    GET  /api/crew-defaults      - default model per crew
+    POST /api/run                - starts a crew run; returns run_id
+    GET  /api/run/{run_id}       - status and buffered output for a run
+    GET  /api/outputs            - list all files in outputs/
+    GET  /api/outputs/{path}     - read/download a file from outputs/
+    WS   /ws/{run_id}            - streams live agent output for a run
 
 Each crew run executes in a background thread. Agent stdout is captured
 and pushed through an asyncio queue to the WebSocket client.
@@ -165,8 +169,15 @@ async def api_run(req: RunRequest):
             from crews.safety_crew import build_crew as safety_crew
             from crews.ops_crew import build_crew as ops_crew
 
-            builders = {"default": default_crew, "plc": plc_crew, "react": react_crew, "vision": vision_crew, "safety": safety_crew, "ops": ops_crew}
-            builder = builders.get(req.crew, default_crew)
+            builders = {
+                "default": default_crew, "plc": plc_crew, "react": react_crew,
+                "vision": vision_crew, "safety": safety_crew, "ops": ops_crew,
+            }
+            if req.crew not in builders:
+                _runs[run_id]["status"] = "error"
+                _push(f"[ERROR] Unknown crew '{req.crew}'. Valid: {', '.join(builders)}")
+                return
+            builder = builders[req.crew]
 
             with redirect_stdout(_StreamCapture()):
                 crew = builder(goal=req.goal, config=cfg)
@@ -186,11 +197,14 @@ async def api_run(req: RunRequest):
                             chain_crew(goal=req.goal, config=cfg).kickoff()
                 _push("[SmithAgentic] Chain complete.")
 
-            # Collect output files
+            # Collect output files (recursive so subdirs like docs/ are included)
             outputs_dir = _UNIT_DIR / "outputs"
             if outputs_dir.exists():
-                files = [f.name for f in outputs_dir.iterdir() if f.is_file() and f.name != ".gitkeep"]
-                _runs[run_id]["files"] = sorted(files)
+                _runs[run_id]["files"] = sorted(
+                    str(f.relative_to(outputs_dir))
+                    for f in outputs_dir.rglob("*")
+                    if f.is_file() and f.name != ".gitkeep"
+                )
 
             _runs[run_id]["status"] = "completed"
             _push("[SmithAgentic] Run completed.")
@@ -221,16 +235,31 @@ async def api_run_status(run_id: str):
     }
 
 
-@app.get("/api/outputs/{filename}")
+@app.get("/api/outputs")
+async def api_list_outputs():
+    """List all files in outputs/, including subdirectories."""
+    outputs_dir = _UNIT_DIR / "outputs"
+    if not outputs_dir.exists():
+        return {"files": []}
+    file_list = [
+        {"path": str(f.relative_to(outputs_dir)), "size": f.stat().st_size}
+        for f in outputs_dir.rglob("*")
+        if f.is_file() and f.name != ".gitkeep"
+    ]
+    file_list.sort(key=lambda x: x["path"])
+    return {"files": file_list}
+
+
+@app.get("/api/outputs/{filename:path}")
 async def api_get_output(filename: str):
-    """Download a file from outputs/."""
+    """Read/download a file from outputs/. Supports subdirectory paths."""
     outputs_dir = _UNIT_DIR / "outputs"
     target = (outputs_dir / filename).resolve()
-    if not str(target).startswith(str(outputs_dir)):
+    if not str(target).startswith(str(outputs_dir.resolve())):
         return JSONResponse({"error": "Access denied"}, status_code=403)
     if not target.exists():
         return JSONResponse({"error": "File not found"}, status_code=404)
-    return FileResponse(str(target), filename=filename)
+    return FileResponse(str(target), filename=Path(filename).name)
 
 
 # ── WebSocket ─────────────────────────────────────────────────────────────────
