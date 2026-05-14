@@ -56,7 +56,12 @@ app = FastAPI(title="SmithAgentic", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:4173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://localhost:3000",
+        "https://addisontech.github.io",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
