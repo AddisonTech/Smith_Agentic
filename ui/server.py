@@ -107,6 +107,7 @@ async def api_crew_defaults():
         "default": get_crew_model(cfg, "default"),
         "plc":     get_crew_model(cfg, "plc"),
         "react":   get_crew_model(cfg, "react"),
+        "vision":  get_crew_model(cfg, "vision"),
     }
 
 
@@ -123,7 +124,7 @@ async def api_run(req: RunRequest):
         "files": [],
     }
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     def _run_crew():
         from config.loader import get_crew_model
@@ -157,8 +158,9 @@ async def api_run(req: RunRequest):
             from crews.default_crew import build_crew as default_crew
             from crews.plc_crew import build_crew as plc_crew
             from crews.react_crew import build_crew as react_crew
+            from crews.vision_crew import build_crew as vision_crew
 
-            builders = {"default": default_crew, "plc": plc_crew, "react": react_crew}
+            builders = {"default": default_crew, "plc": plc_crew, "react": react_crew, "vision": vision_crew}
             builder = builders.get(req.crew, default_crew)
 
             with redirect_stdout(_StreamCapture()):
