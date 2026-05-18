@@ -8,15 +8,20 @@ Launch:
     # open http://localhost:8765
 
 Endpoints:
-    GET  /                       - serves index.html
-    GET  /api/status             - health check + Ollama availability
-    GET  /api/models             - lists available Ollama models
-    GET  /api/crew-defaults      - default model per crew
-    POST /api/run                - starts a crew run; returns run_id
-    GET  /api/run/{run_id}       - status and buffered output for a run
-    GET  /api/outputs            - list all files in outputs/
-    GET  /api/outputs/{path}     - read/download a file from outputs/
-    WS   /ws/{run_id}            - streams live agent output for a run
+    GET  /                          - serves index.html
+    GET  /api/status                - health check + Ollama availability
+    GET  /api/models                - lists available Ollama models
+    GET  /api/crew-defaults         - default model per crew
+    POST /api/run                   - starts a crew run; returns run_id
+    GET  /api/run/{run_id}          - status and buffered output for a run
+    POST /api/run/{run_id}/cancel   - cancel an active run
+    GET  /api/outputs               - list all files in outputs/
+    GET  /api/outputs/{path}        - read/download a file from outputs/
+    WS   /ws/{run_id}               - streams live agent output for a run
+
+Environment variables:
+    SMITH_AGENTIC_OLLAMA_URL   Ollama base URL (default: http://localhost:11434)
+    SMITH_AGENTIC_CORS_ORIGINS Comma-separated allowed origins (default: localhost dev + GitHub Pages)
 
 Each crew run executes in a background thread. Agent stdout is captured
 and pushed through an asyncio queue to the WebSocket client.
@@ -26,11 +31,14 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import os
 import re
+import sqlite3
 import sys
 import threading
 import uuid
 from contextlib import redirect_stdout
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +51,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# ── Path setup ───────────────────────────────────────────────────────────────
+# ── Path setup ────────────────────────────────────────────────────────────────
 _UI_DIR   = Path(__file__).resolve().parent
 _UNIT_DIR = _UI_DIR.parent
 if str(_UNIT_DIR) not in sys.path:
@@ -51,24 +59,113 @@ if str(_UNIT_DIR) not in sys.path:
 
 from config.loader import load_config
 
+# ── Env config ────────────────────────────────────────────────────────────────
+_OLLAMA_URL = os.environ.get("SMITH_AGENTIC_OLLAMA_URL", "http://localhost:11434").rstrip("/")
+
+_DEFAULT_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "http://localhost:3000",
+    "https://addisontech.github.io",
+]
+_cors_env = os.environ.get("SMITH_AGENTIC_CORS_ORIGINS", "")
+_CORS_ORIGINS = [o.strip() for o in _cors_env.split(",") if o.strip()] or _DEFAULT_ORIGINS
+
+# ── SQLite persistence ────────────────────────────────────────────────────────
+_DB_PATH = _UNIT_DIR / "runs.db"
+_db_lock = threading.Lock()
+
+
+def _db_connect() -> sqlite3.Connection:
+    conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def _db_init():
+    with _db_lock:
+        conn = _db_connect()
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS runs (
+                run_id     TEXT PRIMARY KEY,
+                crew       TEXT NOT NULL,
+                goal       TEXT NOT NULL,
+                status     TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+        conn.close()
+
+
+def _db_upsert(run_id: str, crew: str, goal: str, status: str):
+    now = datetime.now(timezone.utc).isoformat()
+    with _db_lock:
+        conn = _db_connect()
+        conn.execute("""
+            INSERT INTO runs (run_id, crew, goal, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(run_id) DO UPDATE SET
+                status     = excluded.status,
+                updated_at = excluded.updated_at
+        """, (run_id, crew, goal, status, now, now))
+        conn.commit()
+        conn.close()
+
+
+def _db_load_all() -> list[sqlite3.Row]:
+    with _db_lock:
+        conn = _db_connect()
+        rows = conn.execute("SELECT * FROM runs ORDER BY created_at DESC").fetchall()
+        conn.close()
+    return rows
+
+
 # ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(title="SmithAgentic", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:4173",
-        "http://localhost:3000",
-        "https://addisontech.github.io",
-    ],
+    allow_origins=_CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Run registry ──────────────────────────────────────────────────────────────
-# run_id → {"status": str, "queue": asyncio.Queue, "output": list[str], "files": list[str]}
+# run_id → {status, queue, output, files, stop_event, crew, goal}
 _runs: dict[str, dict[str, Any]] = {}
+
+
+def _set_status(run_id: str, status: str):
+    """Update run status in memory and persist to SQLite."""
+    run = _runs.get(run_id)
+    if run:
+        run["status"] = status
+        _db_upsert(run_id, run["crew"], run["goal"], status)
+
+
+# ── Startup: load persisted runs ──────────────────────────────────────────────
+@app.on_event("startup")
+async def _startup():
+    _db_init()
+    loop = asyncio.get_running_loop()
+    for row in _db_load_all():
+        rid = row["run_id"]
+        # Mark anything that was mid-run as error (server was killed)
+        status = row["status"]
+        if status in ("starting", "running"):
+            status = "error"
+            _db_upsert(rid, row["crew"], row["goal"], status)
+        _runs[rid] = {
+            "status":     status,
+            "queue":      asyncio.Queue(),
+            "output":     [f"[SmithAgentic] Restored from previous session. Final status: {status}"],
+            "files":      [],
+            "stop_event": threading.Event(),
+            "crew":       row["crew"],
+            "goal":       row["goal"],
+        }
 
 
 # ── Request schemas ───────────────────────────────────────────────────────────
@@ -76,8 +173,8 @@ class RunRequest(BaseModel):
     goal: str
     crew: str = "default"
     model: str | None = None
-    hitl: bool = False  # HITL disabled in UI mode (approval is in the UI)
-    chain: bool = False  # if True, run safety then ops after the primary crew
+    hitl: bool = False
+    chain: bool = False
 
 
 # ── Static files (index.html) ─────────────────────────────────────────────────
@@ -96,7 +193,7 @@ async def api_status():
     import urllib.request
     ollama_ok = False
     try:
-        urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2)
+        urllib.request.urlopen(f"{_OLLAMA_URL}/api/tags", timeout=2)
         ollama_ok = True
     except Exception:
         pass
@@ -108,7 +205,7 @@ async def api_models():
     """List Ollama models available locally."""
     import urllib.request
     try:
-        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=5) as r:
+        with urllib.request.urlopen(f"{_OLLAMA_URL}/api/tags", timeout=5) as r:
             data = json.loads(r.read())
             models = [m["name"] for m in data.get("models", [])]
             return {"models": models}
@@ -145,27 +242,33 @@ async def api_run(req: RunRequest):
 
     run_id = str(uuid.uuid4())[:8]
     queue: asyncio.Queue = asyncio.Queue()
+    stop_event = threading.Event()
 
     _runs[run_id] = {
-        "status": "starting",
-        "queue": queue,
-        "output": [],
-        "files": [],
+        "status":     "starting",
+        "queue":      queue,
+        "output":     [],
+        "files":      [],
+        "stop_event": stop_event,
+        "crew":       req.crew,
+        "goal":       req.goal,
     }
+    _db_upsert(run_id, req.crew, req.goal, "starting")
 
     loop = asyncio.get_running_loop()
 
     def _run_crew():
         from config.loader import get_crew_model
         cfg = load_config()
-        # Use explicit model override if provided, else resolve per-crew default
         if req.model:
             cfg["_model_override"] = req.model
-        cfg["crew"]["hitl"] = False  # UI handles approval separately
+        cfg["crew"]["hitl"] = False
 
         effective_model = cfg.get("_model_override") or get_crew_model(cfg, req.crew)
 
         def _push(line: str):
+            if stop_event.is_set():
+                return
             _runs[run_id]["output"].append(line)
             asyncio.run_coroutine_threadsafe(queue.put(line), loop)
 
@@ -178,12 +281,16 @@ async def api_run(req: RunRequest):
             def flush(self):
                 pass
 
+        if stop_event.is_set():
+            _set_status(run_id, "cancelled")
+            asyncio.run_coroutine_threadsafe(queue.put(None), loop)
+            return
+
         _push(f"[SmithAgentic] Starting crew='{req.crew}' model='{effective_model}'")
         _push(f"[SmithAgentic] Goal: {req.goal}")
-        _runs[run_id]["status"] = "running"
+        _set_status(run_id, "running")
 
         try:
-            # Import crew builders inside thread to avoid import-time side effects
             from crews.default_crew import build_crew as default_crew
             from crews.plc_crew import build_crew as plc_crew
             from crews.react_crew import build_crew as react_crew
@@ -197,9 +304,21 @@ async def api_run(req: RunRequest):
             }
             builder = builders[req.crew]
 
+            if stop_event.is_set():
+                _set_status(run_id, "cancelled")
+                _push("[SmithAgentic] Run cancelled before kickoff.")
+                asyncio.run_coroutine_threadsafe(queue.put(None), loop)
+                return
+
             with redirect_stdout(_StreamCapture()):
                 crew = builder(goal=req.goal, config=cfg)
                 result = crew.kickoff()
+
+            if stop_event.is_set():
+                _set_status(run_id, "cancelled")
+                _push("[SmithAgentic] Run cancelled after kickoff.")
+                asyncio.run_coroutine_threadsafe(queue.put(None), loop)
+                return
 
             _push(f"\n{'='*50}")
             _push("FINAL OUTPUT")
@@ -208,6 +327,8 @@ async def api_run(req: RunRequest):
 
             if req.chain and req.crew not in ("safety", "ops"):
                 for chain_name in ("safety", "ops"):
+                    if stop_event.is_set():
+                        break
                     _push(f"\n[SmithAgentic] Chain: starting {chain_name} crew...")
                     with redirect_stdout(_StreamCapture()):
                         chain_crew = builders.get(chain_name)
@@ -215,7 +336,6 @@ async def api_run(req: RunRequest):
                             chain_crew(goal=req.goal, config=cfg).kickoff()
                 _push("[SmithAgentic] Chain complete.")
 
-            # Collect output files (recursive so subdirs like docs/ are included)
             outputs_dir = _UNIT_DIR / "outputs"
             if outputs_dir.exists():
                 _runs[run_id]["files"] = sorted(
@@ -224,19 +344,38 @@ async def api_run(req: RunRequest):
                     if f.is_file() and f.name != ".gitkeep"
                 )
 
-            _runs[run_id]["status"] = "completed"
-            _push("[SmithAgentic] Run completed.")
+            if stop_event.is_set():
+                _set_status(run_id, "cancelled")
+                _push("[SmithAgentic] Run cancelled.")
+            else:
+                _set_status(run_id, "completed")
+                _push("[SmithAgentic] Run completed.")
 
         except Exception as e:
-            _runs[run_id]["status"] = "error"
+            _set_status(run_id, "error")
             _push(f"[ERROR] {e}")
         finally:
-            asyncio.run_coroutine_threadsafe(queue.put(None), loop)  # sentinel
+            asyncio.run_coroutine_threadsafe(queue.put(None), loop)
 
     thread = threading.Thread(target=_run_crew, daemon=True)
     thread.start()
 
     return {"run_id": run_id}
+
+
+@app.post("/api/run/{run_id}/cancel")
+async def api_cancel_run(run_id: str):
+    """Signal a running crew to stop. Sets status to 'cancelled'."""
+    if run_id not in _runs:
+        return JSONResponse({"error": "Run not found"}, status_code=404)
+    run = _runs[run_id]
+    if run["status"] not in ("starting", "running"):
+        return JSONResponse(
+            {"error": f"Run is not active (status: {run['status']})"},
+            status_code=400,
+        )
+    run["stop_event"].set()
+    return {"run_id": run_id, "status": "cancelling"}
 
 
 @app.get("/api/run/{run_id}")
@@ -249,7 +388,7 @@ async def api_run_status(run_id: str):
         "run_id": run_id,
         "status": run["status"],
         "output": run["output"],
-        "files": run["files"],
+        "files":  run["files"],
     }
 
 
@@ -297,6 +436,17 @@ async def websocket_stream(websocket: WebSocket, run_id: str):
     for line in _runs[run_id]["output"]:
         await websocket.send_text(json.dumps({"type": "output", "line": line}))
 
+    # If run already finished, send done immediately
+    if _runs[run_id]["status"] not in ("starting", "running"):
+        run = _runs[run_id]
+        await websocket.send_text(json.dumps({
+            "type":   "done",
+            "status": run["status"],
+            "files":  run["files"],
+        }))
+        await websocket.close()
+        return
+
     try:
         while True:
             try:
@@ -308,9 +458,9 @@ async def websocket_stream(websocket: WebSocket, run_id: str):
             if line is None:  # sentinel - run finished
                 run = _runs[run_id]
                 await websocket.send_text(json.dumps({
-                    "type": "done",
+                    "type":   "done",
                     "status": run["status"],
-                    "files": run["files"],
+                    "files":  run["files"],
                 }))
                 break
 
