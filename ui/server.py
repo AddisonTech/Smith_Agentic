@@ -20,8 +20,9 @@ Endpoints:
     WS   /ws/{run_id}               - streams live agent output for a run
 
 Environment variables:
-    SMITH_AGENTIC_OLLAMA_URL   Ollama base URL (default: http://localhost:11434)
-    SMITH_AGENTIC_CORS_ORIGINS Comma-separated allowed origins (default: localhost dev + GitHub Pages)
+    SMITH_AGENTIC_OLLAMA_URL     Ollama base URL (default: http://localhost:11434)
+    SMITH_AGENTIC_CORS_ORIGINS   Comma-separated allowed origins (default: localhost dev + GitHub Pages)
+    SMITH_AGENTIC_RUN_TIMEOUT    Max seconds a run may execute before being killed (default: 1800)
 
 Each crew run executes in a background thread. Agent stdout is captured
 and pushed through an asyncio queue to the WebSocket client.
@@ -61,6 +62,8 @@ from config.loader import load_config
 
 # ── Env config ────────────────────────────────────────────────────────────────
 _OLLAMA_URL = os.environ.get("SMITH_AGENTIC_OLLAMA_URL", "http://localhost:11434").rstrip("/")
+
+_RUN_TIMEOUT = int(os.environ.get("SMITH_AGENTIC_RUN_TIMEOUT", "1800"))
 
 _DEFAULT_ORIGINS = [
     "http://localhost:5173",
@@ -290,6 +293,23 @@ async def api_run(req: RunRequest):
         _push(f"[SmithAgentic] Goal: {req.goal}")
         _set_status(run_id, "running")
 
+        timeout_timer: threading.Timer | None = None
+
+        def _on_timeout():
+            if _runs[run_id]["status"] not in ("running", "starting"):
+                return
+            timeout_mins = _RUN_TIMEOUT // 60
+            msg = f"[SmithAgentic] Run timed out after {timeout_mins} minutes."
+            _runs[run_id]["output"].append(msg)
+            asyncio.run_coroutine_threadsafe(queue.put(msg), loop)
+            stop_event.set()
+            _set_status(run_id, "error")
+            asyncio.run_coroutine_threadsafe(queue.put(None), loop)
+
+        timeout_timer = threading.Timer(_RUN_TIMEOUT, _on_timeout)
+        timeout_timer.daemon = True
+        timeout_timer.start()
+
         try:
             from crews.default_crew import build_crew as default_crew
             from crews.plc_crew import build_crew as plc_crew
@@ -355,6 +375,8 @@ async def api_run(req: RunRequest):
             _set_status(run_id, "error")
             _push(f"[ERROR] {e}")
         finally:
+            if timeout_timer is not None:
+                timeout_timer.cancel()
             asyncio.run_coroutine_threadsafe(queue.put(None), loop)
 
     thread = threading.Thread(target=_run_crew, daemon=True)
