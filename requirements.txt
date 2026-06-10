@@ -7,9 +7,15 @@
 # Tested with Python 3.10+
 
 # Core
-crewai==1.14.4
+crewai==1.14.6
 ddgs>=9.0.0,<10.0.0          # renamed from duckduckgo-search
 pyyaml>=6.0.1,<7.0.0
+
+# MCP client — connects crews to external OT bridges (Hermes, ignition-mcp).
+# See tools/mcp_tools.py + config.yaml `mcp_servers`.
+crewai-tools>=1.14.6         # provides MCPServerAdapter
+mcp>=1.26.0                  # Model Context Protocol client
+mcpadapt>=0.1.20             # adapts MCP tools into CrewAI tools (crewai-tools[mcp])
 
 # Web fetch (WebFetchTool)
 requests>=2.31.0,<3.0.0

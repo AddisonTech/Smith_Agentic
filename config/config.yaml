@@ -60,3 +60,41 @@ agent_models:
 vision_inspect:
   base_url: http://localhost:8000   # Vision_Inspect FastAPI service
   timeout:  30                      # seconds per API call
+
+# ── External MCP tool servers (OT bridges) ────────────────────────────────────
+# Smith_Agentic connects OUT to these MCP servers as a client and exposes their
+# tools to the listed crews. READ tools are available by default. WRITE/mutating
+# tools (which touch the plant floor) require ALL of:
+#   1. allow_writes: true on the server below, AND
+#   2. env SMITH_AGENTIC_MCP_ALLOW_WRITES=true, AND
+#   3. env SMITH_AGENTIC_MCP_WRITE_TOKEN matching write_token (if one is set).
+# This mirrors ignition-mcp's "script execution disabled by default" pattern.
+mcp_servers:
+  hermes:                           # OPC-UA plant-floor bridge (stdio transport)
+    enabled: true
+    transport: stdio
+    # `command` defaults to the running Python interpreter; override if needed.
+    args: ["-m", "hermes_mcp.server"]
+    cwd: "../Hermes"                # resolved relative to Smith_Agentic/
+    env:
+      HERMES_ENDPOINT: "opc.tcp://localhost:4840"
+    connect_timeout: 8
+    crews: [plc]
+    read_tools:  [read_node, read_nodes, browse_nodes, get_server_status, get_node_attributes]
+    write_tools: [write_node]
+    allow_writes: false
+    write_token: ""
+
+  ignition:                         # Ignition SCADA gateway bridge (streamable-http)
+    enabled: false                  # off by default: needs a running gateway on :8007
+    transport: streamable-http
+    url: "http://127.0.0.1:8007/mcp"
+    connect_timeout: 8
+    crews: [plc]
+    read_tools:  [get_gateway_info, get_module_health, get_system_metrics, list_projects,
+                  get_project, list_tag_providers, browse_tags, read_tags,
+                  get_active_alarms, get_alarm_history, get_tag_history]
+    write_tools: [write_tag, create_tags, edit_tags, delete_tags, set_project_resource,
+                  delete_project_resource, create_project, delete_project, acknowledge_alarms]
+    allow_writes: false
+    write_token: ""

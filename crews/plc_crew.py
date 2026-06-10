@@ -34,6 +34,7 @@ from tools.file_tools import FileReadTool, FileWriteTool, FileListTool
 from tools.search_tool import WebSearchTool
 from tools.code_executor import CodeExecutorTool
 from tools.codebase_reader import CodebaseReadTool, CodebaseListTool, CodebaseGlobTool
+from tools.mcp_tools import build_mcp_tools
 from memory.memory_store import create_memory_tools
 from crews.hitl import approve_plan
 from crews.safety_crew import build_safety_agents
@@ -68,10 +69,15 @@ def build_crew(goal: str, config: dict) -> Crew:
     cb_glob    = CodebaseGlobTool()
     mem_store, mem_query = create_memory_tools(config)
 
+    # Live plant-floor tools from the OT bridges (Hermes OPC-UA, ignition-mcp).
+    # Read tools by default; writes gated (see config mcp_servers + tools/mcp_tools.py).
+    # Returns [] if no servers are enabled/reachable, so the crew still runs offline.
+    ot_tools = build_mcp_tools(config, "plc")
+
     # ── Agents ────────────────────────────────────────────────────────────────
-    planner    = create_plc_planner(llm=llm_main, tools=[file_list, cb_list, cb_glob, mem_query], verbose=verbose)
-    researcher = create_researcher(llm=llm_main, tools=[web_search, file_write, file_list, cb_read, cb_glob, mem_store, mem_query], verbose=verbose)
-    developer  = create_plc_developer(llm=llm_main, tools=[file_read, file_write, file_list, cb_read, cb_glob, mem_store, mem_query], verbose=verbose)
+    planner    = create_plc_planner(llm=llm_main, tools=[file_list, cb_list, cb_glob, mem_query, *ot_tools], verbose=verbose)
+    researcher = create_researcher(llm=llm_main, tools=[web_search, file_write, file_list, cb_read, cb_glob, mem_store, mem_query, *ot_tools], verbose=verbose)
+    developer  = create_plc_developer(llm=llm_main, tools=[file_read, file_write, file_list, cb_read, cb_glob, mem_store, mem_query, *ot_tools], verbose=verbose)
     reviewer   = create_plc_safety_reviewer(llm=llm_main, tools=[file_read, file_write, file_list, cb_read, mem_query], verbose=verbose)
     qa_agent, sec_agent, dep_agent = build_safety_agents(
         llm_qa, llm_sec, llm_dep,
